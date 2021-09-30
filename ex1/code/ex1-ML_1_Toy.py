@@ -15,6 +15,8 @@ def calculate_sample_mean(data: np.ndarray) -> np.ndarray:
     d, n = np.shape(data)
     mean = np.zeros((d,))
 
+    # Simple: The average of each data set is computed and added to the mean vector.
+
     for i in range(0, d):
         m = 0
         for j in range(0, n):
@@ -27,7 +29,7 @@ def calculate_sample_mean(data: np.ndarray) -> np.ndarray:
 def calculate_sample_covariance_matrix(data: np.ndarray, mean: np.ndarray) -> np.ndarray:
     # EXERCISE 2 - Compute the sample covariance matrix
 
-    # First we'll calculate the variances, which will fill the diagonal of the covariance matrix sigma
+    # First we'll calculate the variances, which will fill the diagonal of the covariance matrix \Sigma.
     d, n = np.shape(data)
     variances = np.zeros((d,))
 
@@ -41,7 +43,8 @@ def calculate_sample_covariance_matrix(data: np.ndarray, mean: np.ndarray) -> np
     for i in range(0, d):
         cov_matrix[i, i] = variances[i]
 
-    # Now we'll calculate the covariance, whereof only one exists, because we're operating in 2D
+    # Now we'll calculate the covariance, whereof only one exists, because we're operating in 2D and \Sigma is
+    # symmetric.
     covariance = 0
 
     for i in range(0, n):
@@ -49,7 +52,7 @@ def calculate_sample_covariance_matrix(data: np.ndarray, mean: np.ndarray) -> np
 
     covariance = covariance / (n-1)
 
-    # Because sigma is symmetric
+    # Add the covariance to the matrix.
     cov_matrix[0, 1] = covariance
     cov_matrix[1, 0] = covariance
 
@@ -58,6 +61,7 @@ def calculate_sample_covariance_matrix(data: np.ndarray, mean: np.ndarray) -> np
 
 def matrix2dDeterminant(mat: np.ndarray) -> float:
     # EXERCISE 2 - Compute the determinant value of a 2x2 matrix
+    # Just following the definition of the determinant of a 2D matrix.
     matrix_determinant = mat[0, 0] * mat[1, 1] - mat[0, 1] * mat[1, 0]
 
     return matrix_determinant
@@ -65,6 +69,7 @@ def matrix2dDeterminant(mat: np.ndarray) -> float:
 
 def matrix2dInverse(mat: np.ndarray) -> np.ndarray:
     # EXERCISE 2 - Compute the inverse matrix of a 2x2 matrix
+    # Same as with the determinant. We just implement the formula for computing the inverse of a 2D matrix.
     matrix_inverse = np.zeros((2, 2))
 
     scalar = 1 / (mat[0, 0] * mat[1, 1] - mat[0, 1] * mat[1, 0])
@@ -87,6 +92,8 @@ def pdf(x: np.array, mean: np.ndarray, cov: np.ndarray) -> float:
 
     x_minus_mean = np.matrix(x - mean)
 
+    # This variable is only introduced to make the code less convoluted. Otherwise we're simply implementing the
+    # formula from the slides.
     potenz = float(((-1 / 2) * x_minus_mean * matrix2dInverse(cov) * x_minus_mean.T)[0, 0])
 
     probability = (1 / (pow(2 * math.pi, d) * matrix2dDeterminant(cov))) * pow(math.e, potenz)
@@ -103,9 +110,11 @@ def classification(x: np.ndarray, mean_class0: np.ndarray, cov_class0: np.ndarra
     p0 = pdf(x, mean_class0, cov_class0)
     p1 = pdf(x, mean_class1, cov_class1)
 
+    # Just in case :)
     assert(0 <= p0 <= 1)
     assert(0 <= p1 <= 1)
 
+    # The point is assigned to the class with the higher probability of the point belonging to it.
     if p0 > p1:
         assigned_class = False
     else:
@@ -117,6 +126,7 @@ def classification(x: np.ndarray, mean_class0: np.ndarray, cov_class0: np.ndarra
 def box_muller_transform(unif1: float, unif2: float) -> (float, float):
     # EXERCISE 2 - Implement sampling from a standard normal distribution
     # Transforms 2 uniform samples into 2 random samples from a standard normal distribution N(0,1)
+    # This implementation simply follows the formula from the exercise sheet.
     rnd1 = math.sqrt(-2 * math.log(unif1, math.e)) * math.cos(2 * math.pi * unif2)
     rnd2 = math.sqrt(-2 * math.log(unif1, math.e)) * math.sin(2 * math.pi * unif2)
     return rnd1, rnd2
@@ -131,6 +141,9 @@ def cholesky_factor_2d(mat: np.ndarray) -> np.ndarray:
     assert mat[0, 1] - mat[1, 0] < 1e-5
 
     L = np.zeros((2, 2))
+
+    # This is just a simple implementation of the formula to compute the Cholesky Decomposition of a 2x2 Matrix.
+    # The factors which allow for such a decomposition are checked above.
 
     L[0, 0] = math.sqrt(mat[0, 0])
     L[1, 0] = mat[0, 1] / L[0, 0]
