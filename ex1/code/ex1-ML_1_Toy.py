@@ -98,6 +98,8 @@ def pdf(x: np.array, mean: np.ndarray, cov: np.ndarray) -> float:
 
     probability = (1 / (pow(2 * math.pi, d) * matrix2dDeterminant(cov))) * pow(math.e, potenz)
 
+    assert(0 <= probability <= 1)
+
     return probability
 
 
@@ -149,6 +151,12 @@ def cholesky_factor_2d(mat: np.ndarray) -> np.ndarray:
     L[1, 0] = mat[0, 1] / L[0, 0]
     L[1, 1] = math.sqrt(mat[1, 1] - pow(L[1, 0], 2))
 
+    print("before:\n")
+    print(mat)
+
+    print("\n\nafter:\n")
+    print(L)
+
     return L
 
 
@@ -171,7 +179,7 @@ def sample_from_2d_gaussian(mean: np.ndarray, cov: np.ndarray) -> np.ndarray:
     z[0] = rnd1
     z[1] = rnd2
 
-    sample = L * z + mean
+    sample = np.matmul(L, z) + mean
 
     return sample
 
