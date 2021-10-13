@@ -32,9 +32,9 @@ def classify(img: imageHelper, mask: imageHelper, skin_mvnd: List[MVND], notSkin
     skin = (log_likelihood_rgb > 0).astype(int)
     imgMinMask = skin - testmask
     # TODO: EXERCISE 2 - Error Rate without prior
-    fp = ???
-    fn = ???
-    totalError = ???
+    fp = ...
+    fn = ...
+    totalError = ...
 
     print('----- ----- -----')
     print('Total Error WITHOUT Prior =', totalError)
@@ -42,7 +42,7 @@ def classify(img: imageHelper, mask: imageHelper, skin_mvnd: List[MVND], notSkin
     print('false negative rate =', fn)
 
     # TODO: EXERCISE 2 - Error Rate with prior
-    log_likelihood_rgb_with_prior = ???
+    log_likelihood_rgb_with_prior = ...
     skin_prior = ???
     imgMinMask_prior = ???
     fp_prior = ???
