@@ -16,11 +16,13 @@ class MVND:
     # TODO: EXERCISE 2 - Implement pdf and logpdf of a MVND
     def pdf(self, x: np.ndarray) -> np.ndarray:       # Alternatively a float can also be returned if individual datapoints are computed
 
-        d, n = x.shape
-
-        if n is 1:
+        if type(x) != list:
             #print("single datapoint")
             return multivariate_normal.pdf(x, self.mean, self.cov)
+
+        n, d = x.shape
+
+        print(d, n)
 
         probabilities = np.array((1, n))
 
@@ -42,9 +44,15 @@ def log_likelihood(data: np.ndarray, mvnd: List[
     '''
     log_likelihood = np.zeros((1, data.shape[0]))
 
+    n, d = data.shape
+
+    # print("%d, %d", d, n)
+
     # TODO: EXERCISE 2 - Compute likelihood of data
     # Note: For MVGD there will only be 1 item in the list
-    for i in range(0, data.shape[0]):
-        log_likelihood[1, i] = math.log(mvnd[0].pdf(data[i:]), math.e)
+    for k in range(0, n):
+        for i in range(0, d):
+            for j in range(0, len(mvnd)):
+                log_likelihood[0, k] += math.log(mvnd[j].c * mvnd[j].pdf(data[i, k]), math.e)
 
     return log_likelihood

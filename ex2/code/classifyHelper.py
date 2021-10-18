@@ -33,21 +33,22 @@ def classify(img: imageHelper, mask: imageHelper, skin_mvnd: List[MVND], notSkin
     imgMinMask = skin - testmask
     # TODO: EXERCISE 2 - Error Rate without prior
 
-
-
-    fp = 0
     fn = 0
+    fp = 0
 
-    for n in range(0, len(log_likelihood_of_skin_rgb)):
-        skin = False
-
-        if log_likelihood_of_skin_rgb[n] > log_likelihood_of_nonskin_rgb:
+    for n in range(0, len(imgMinMask)):
+        if log_likelihood_rgb > 0:
             skin = True
-            if testmask[n] > 120:
-                fp += 1
         else:
-            if testmask[n] < 120:
-                fn += 1
+            skin = False
+
+        if imgMinMask[n] < 0 and skin is False:
+            fn += 1
+        elif imgMinMask[n] > 0 and skin is True:
+            fp += 1
+
+    fn = fn / len(imgMinMask)
+    fp = fp / len(imgMinMask)
 
     totalError = fp + fn
 
@@ -56,13 +57,33 @@ def classify(img: imageHelper, mask: imageHelper, skin_mvnd: List[MVND], notSkin
     print('false positive rate =', fp)
     print('false negative rate =', fn)
 
-    # TODO: EXERCISE 2 - Error Rate with prior
-    log_likelihood_rgb_with_prior = ...
-    skin_prior = ???
-    imgMinMask_prior = ???
-    fp_prior = ???
-    fn_prior = ???
-    totalError_prior = ???
+    #TODO: EXERCISE 2 - Error Rate with prior
+
+    skin_prob = log_likelihood_of_skin_rgb * prior_skin
+    nonskin_prob = log_likelihood_of_nonskin_rgb * prior_nonskin
+
+    log_likelihood_rgb_with_prior = log_likelihood_of_skin_rgb * prior_skin - log_likelihood_of_nonskin_rgb * prior_nonskin
+    skin_prior = (log_likelihood_rgb_with_prior > 0).astype(int)[:, 0]
+    imgMinMask_prior = skin_prior - testmask
+    fp_prior = 0
+    fn_prior = 0
+
+    for n in range(0, len(imgMinMask)):
+        if log_likelihood_rgb_with_prior > 0:
+            skin = True
+        else:
+            skin = False
+
+        if imgMinMask[n] < 0 and skin is False:
+            fn_prior += 1
+        elif imgMinMask[n] > 0 and skin is True:
+            fp_prior += 1
+
+    fp_prior = fp_prior / len(imgMinMask)
+    fn_prior = fn_prior / len(imgMinMask)
+
+    totalError_prior = fp_prior + fn_prior
+
     print('----- ----- -----')
     print('Total Error WITH Prior =', totalError_prior)
     print('false positive rate =', fp_prior)

@@ -12,7 +12,7 @@ def get_prior(mask: imageHelper) -> (float, float):
 
     for i in range(0, N):
         for j in range(0, M):
-            if image_mask[i, j] > 0.5:
+            if image_mask[i, j] > 120:
                 skinpixel_counter += 1
             else:
                 nonskinpixel_counter += 1
