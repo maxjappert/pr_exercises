@@ -30,59 +30,52 @@ def classify(img: imageHelper, mask: imageHelper, skin_mvnd: List[MVND], notSkin
 
     log_likelihood_rgb = log_likelihood_of_skin_rgb - log_likelihood_of_nonskin_rgb
     skin = (log_likelihood_rgb > 0).astype(int)
+    print(skin.shape)
     imgMinMask = skin - testmask
-    # TODO: EXERCISE 2 - Error Rate without prior
+    # EXERCISE 2 - Error Rate without prior
+
+    print(imgMinMask.shape)
 
     fn = 0
     fp = 0
 
     for n in range(0, len(imgMinMask)):
-        if log_likelihood_rgb > 0:
-            skin = True
-        else:
-            skin = False
-
-        if imgMinMask[n] < 0 and skin is False:
-            fn += 1
-        elif imgMinMask[n] > 0 and skin is True:
+        if imgMinMask[n] == 1:
             fp += 1
+        elif imgMinMask[n] == -1:
+            fn += 1
+
+    totalError = fp + fn
 
     fn = fn / len(imgMinMask)
     fp = fp / len(imgMinMask)
-
-    totalError = fp + fn
 
     print('----- ----- -----')
     print('Total Error WITHOUT Prior =', totalError)
     print('false positive rate =', fp)
     print('false negative rate =', fn)
 
-    #TODO: EXERCISE 2 - Error Rate with prior
+    #EXERCISE 2 - Error Rate with prior
 
     skin_prob = log_likelihood_of_skin_rgb * prior_skin
     nonskin_prob = log_likelihood_of_nonskin_rgb * prior_nonskin
 
     log_likelihood_rgb_with_prior = log_likelihood_of_skin_rgb * prior_skin - log_likelihood_of_nonskin_rgb * prior_nonskin
-    skin_prior = (log_likelihood_rgb_with_prior > 0).astype(int)[:, 0]
+    skin_prior = (log_likelihood_rgb_with_prior > 0).astype(int)
     imgMinMask_prior = skin_prior - testmask
     fp_prior = 0
     fn_prior = 0
 
     for n in range(0, len(imgMinMask)):
-        if log_likelihood_rgb_with_prior > 0:
-            skin = True
-        else:
-            skin = False
-
-        if imgMinMask[n] < 0 and skin is False:
-            fn_prior += 1
-        elif imgMinMask[n] > 0 and skin is True:
+        if imgMinMask_prior[n] == 1:
             fp_prior += 1
+        elif imgMinMask_prior[n] == -1:
+            fn_prior += 1
+
+    totalError_prior = fp_prior + fn_prior
 
     fp_prior = fp_prior / len(imgMinMask)
     fn_prior = fn_prior / len(imgMinMask)
-
-    totalError_prior = fp_prior + fn_prior
 
     print('----- ----- -----')
     print('Total Error WITH Prior =', totalError_prior)
@@ -97,6 +90,7 @@ def classify(img: imageHelper, mask: imageHelper, skin_mvnd: List[MVND], notSkin
     fpImagePrior = np.reshape((imgMinMask_prior > 0).astype(float), (N, M))
     fnImagePrior = np.reshape((imgMinMask_prior < 0).astype(float), (N, M))
     prediction = imageHelper()
+    #print(skin.shape)
     prediction.loadImage1dBinary(skin, N, M)
     predictionPrior = imageHelper()
     predictionPrior.loadImage1dBinary(skin_prior, N, M)
