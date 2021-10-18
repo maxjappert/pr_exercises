@@ -31,13 +31,12 @@ def log_likelihood(data: np.ndarray, mvnd: List[
 
     n, d = data.shape
 
-    log_likelihood = np.zeros(n)
+    log_likelihood = np.zeros((len(mvnd), n))
 
     # TODO: EXERCISE 2 - Compute likelihood of data
     # TODO: Update for exercise 2
-    # Note: For MVGD there will only be 1 item in the list
-    for k in range(0, n):
-        # log_likelihood[0, k] += math.log(mvnd[j].c * mvnd[j].pdf(data[i, k]), math.e)
-        log_likelihood[k] = math.log(mvnd[0].pdf(data[k, :]), math.e)
+    for j in range(0, len(mvnd)):
+        for k in range(0, n):
+            log_likelihood[j, k] = math.log(mvnd[j].c * mvnd[j].pdf(data[k, :]), math.e)
 
     return log_likelihood

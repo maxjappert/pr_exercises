@@ -66,5 +66,7 @@ def gmm_em(data, K: int, iter: int, plot=False) -> list:
     # Hint - then iteratively update mean, cov and c value of each cluster via EM
     # Hint - use the gmm_draw() function to visualize each step
 
+
+
     plt.show()
     return gmm

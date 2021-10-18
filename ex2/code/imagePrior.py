@@ -4,19 +4,10 @@ from imageHelper import imageHelper
 
 def get_prior(mask: imageHelper) -> (float, float):
     [N, M] = mask.shape
-    image_mask = mask.image[:]
+    image_mask = mask.getLinearImageBinary().astype(int)[:, 0]
     # EXERCISE 2 - Compute the skin and nonskin prior
 
-    skinpixel_counter = 0
-    nonskinpixel_counter = 0
+    prior_skin = float(np.sum(image_mask)) / (N*M)
+    prior_nonskin = 1.0 - prior_skin
 
-    for i in range(0, N):
-        for j in range(0, M):
-            if image_mask[i, j] > 120:
-                skinpixel_counter += 1
-            else:
-                nonskinpixel_counter += 1
-
-    prior_skin = skinpixel_counter / (N*M)
-    prior_nonskin = nonskinpixel_counter / (N*M)
     return prior_skin, prior_nonskin

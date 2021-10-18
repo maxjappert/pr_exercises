@@ -22,8 +22,8 @@ def classify(img: imageHelper, mask: imageHelper, skin_mvnd: List[MVND], notSkin
         skin_mvnd = [skin_mvnd]
     if (type(notSkin_mvnd) != list):
         notSkin_mvnd = [notSkin_mvnd]
-    log_likelihood_of_skin_rgb = log_likelihood(im_rgb_lin, skin_mvnd)
-    log_likelihood_of_nonskin_rgb = log_likelihood(im_rgb_lin, notSkin_mvnd)
+    log_likelihood_of_skin_rgb = log_likelihood(im_rgb_lin, skin_mvnd)[0, :]
+    log_likelihood_of_nonskin_rgb = log_likelihood(im_rgb_lin, notSkin_mvnd)[0, :]
 
     testmask = mask.getLinearImageBinary().astype(int)[:, 0]
     npixels = len(testmask)
@@ -82,6 +82,8 @@ def classify(img: imageHelper, mask: imageHelper, skin_mvnd: List[MVND], notSkin
     print('false positive rate =', fp_prior)
     print('false negative rate =', fn_prior)
     print('----- ----- -----')
+    print('skin prior: ', prior_skin)
+    print('nonskin prior: ', prior_nonskin)
 
     N = mask.N
     M = mask.M
