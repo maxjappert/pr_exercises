@@ -69,53 +69,56 @@ def gmm_em(data, K: int, iter: int, plot=False) -> list:
     # Hint - then iteratively update mean, cov and c value of each cluster via EM
     # Hint - use the gmm_draw() function to visualize each step
 
-    cluster_1 = 0
-    cluster_2 = 0
-    cluster_3 = 0
-    cluster_assignments = np.random.randint(0, K, N)
+    clusters = []
+    indexes = []
 
-    for i in range(N):
-        if cluster_assignments[i] == 0:
-            cluster_1 += 1
-        elif cluster_assignments[i] == 1:
-            cluster_2 += 1
-        else:
-            cluster_3 += 1
-    cluster_one = np.zeros((d, cluster_1))
-    cluster_two = np.zeros((d, cluster_2))
-    cluster_three = np.zeros((d, cluster_3))
+    assignment = []
+    class_sizes = []
 
-    helper_1 = 0
-    helper_2 = 0
-    helper_3 = 0
-    for i in range(N):
-        if cluster_assignments[i] == 0:
-            cluster_one[:, helper_1] = data[:, i]
-            helper_1 += 1
-        elif cluster_assignments[i] == 1:
-            cluster_two[:, helper_2] = data[:, i]
-            helper_2 += 1
-        else:
-            cluster_three[:, helper_3] = data[:, i]
-            helper_3 += 1
+    for _ in range(0, K):
+        class_sizes.append(0)
+        indexes.append(0)
 
-    cs = [1.0 / 3, 1.0 / 3, 1.0 / 3]
+    for i in range(0, N):
+        k = np.random.randint(0, K)
+        assignment.append(k)
+        class_sizes[k] += 1
 
-    mvnd_1 = MVND(cluster_one, cs[0])
-    cov_1 = mvnd_1.cov
-    mean_1 = mvnd_1.mean
+    for k in range(0, K):
+        clusters.append(np.zeros((d, class_sizes[k])))
 
-    mvnd_2 = MVND(cluster_two, cs[1])
-    cov_2 = mvnd_2.cov
-    mean_2 = mvnd_2.mean
+    for i in range(0, N):
+        k = assignment[i]
+        clusters[k][:, indexes[k]] = data[:, i]
+        indexes[k] += 1
 
-    mvnd_3 = MVND(cluster_three, cs[2])
-    cov_3 = mvnd_3.cov
-    mean_3 = mvnd_3.mean
+    mvnds = []
+    covs = []
+    means = []
+    cs = []
 
-    mvnds = [mvnd_1, mvnd_2, mvnd_3]
-    covs = [cov_1, cov_2, cov_3]
-    means = [mean_1, mean_2, mean_3]
+    for k in range(0, K):
+        mvnds.append(MVND(clusters[k], 1.0 / K))
+        covs.append(np.ndarray)
+        means.append(np.ndarray)
+        cs.append(float)
+
+
+    # mvnd_1 = MVND(cluster_one, cs[0])
+    # cov_1 = mvnd_1.cov
+    # mean_1 = mvnd_1.mean
+    #
+    # mvnd_2 = MVND(cluster_two, cs[1])
+    # cov_2 = mvnd_2.cov
+    # mean_2 = mvnd_2.mean
+    #
+    # mvnd_3 = MVND(cluster_three, cs[2])
+    # cov_3 = mvnd_3.cov
+    # mean_3 = mvnd_3.mean
+    #
+    # mvnds = [mvnd_1, mvnd_2, mvnd_3]
+    # covs = [cov_1, cov_2, cov_3]
+    # means = [mean_1, mean_2, mean_3]
 
     probs = np.zeros((K, N))
 
@@ -168,20 +171,20 @@ def gmm_em(data, K: int, iter: int, plot=False) -> list:
     gmm_draw(mvnds, data, 'pls work')
     plt.show()
 
-    gmm[0] = MVND
-    gmm[1] = MVND
-    gmm[2] = MVND
+    # gmm[0] = MVND
+    # gmm[1] = MVND
+    # gmm[2] = MVND
+    #
+    # gmm[0].cov = covs[0]
+    # gmm[0].mean = means[0]
+    # gmm[0].c = cs[0]
+    #
+    # gmm[1].cov = covs[1]
+    # gmm[1].mean = means[1]
+    # gmm[1].c = cs[1]
+    #
+    # gmm[2].cov = covs[2]
+    # gmm[2].mean = means[2]
+    # gmm[2].c = cs[2]
 
-    gmm[0].cov = covs[0]
-    gmm[0].mean = means[0]
-    gmm[0].c = cs[0]
-
-    gmm[1].cov = covs[1]
-    gmm[1].mean = means[1]
-    gmm[1].c = cs[1]
-
-    gmm[2].cov = covs[2]
-    gmm[2].mean = means[2]
-    gmm[2].c = cs[2]
-
-    return gmm
+    return mvnds
