@@ -29,14 +29,15 @@ def log_likelihood(data: np.ndarray, mvnd: List[
     :return:        Likelihood of each data point
     '''
 
-    n, d = data.shape
+    # switch here!
+    d, n = data.shape
 
     log_likelihood = np.zeros((len(mvnd), n))
 
     # TODO: EXERCISE 2 - Compute likelihood of data
-    # TODO: Update for exercise 2
+    # TODO: UPDATE TEMPORARY CHANGE!!!!!
     for j in range(0, len(mvnd)):
         for k in range(0, n):
-            log_likelihood[j, k] = math.log(mvnd[j].c * mvnd[j].pdf(data[k, :]), math.e)
+            log_likelihood[j, k] = math.log(mvnd[j].c * mvnd[j].pdf(data[:, k]), math.e)
 
     return log_likelihood
