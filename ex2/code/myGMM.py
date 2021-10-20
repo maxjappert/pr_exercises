@@ -66,6 +66,36 @@ def gmm_em(data, K: int, iter: int, plot=False) -> list:
     # Hint - then iteratively update mean, cov and c value of each cluster via EM
     # Hint - use the gmm_draw() function to visualize each step
 
+    cluster_1 = 0
+    cluster_2 = 0
+    cluster_3 = 0
+    cluster_assignments = np.random.randint(0, K, N)
+
+    for i in range(N):
+        if cluster_assignments[i] == 0:
+            cluster_1 += 1
+        elif cluster_assignments[i] == 1:
+            cluster_2 += 1
+        else:
+            cluster_3 += 1
+    cluster_one = np.zeros(d, cluster_1)
+    cluster_two = np.zeros(d, cluster_2)
+    cluster_three = np.zeros(d, cluster_3)
+
+    helper_1 = 0
+    helper_2 = 1
+    helper_3 = 2
+    for i in range(N):
+        if cluster_assignments[i] == 0:
+            cluster_one[helper_1] = data[:, i]
+            helper_1 += 1
+        elif cluster_assignments[i] == 1:
+            cluster_two[helper_2] = data[:, i]
+            helper_2 += 1
+        else:
+            cluster_three[helper_3] = data[:, i]
+            helper_3 += 1
+
 
 
     plt.show()
