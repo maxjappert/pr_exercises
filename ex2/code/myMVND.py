@@ -7,6 +7,10 @@ from scipy.stats import multivariate_normal
 
 class MVND:
     # TODO: EXERCISE 2 - Implement mean and covariance matrix of given data
+    c = None
+    mean = None
+    cov = None
+
     def __init__(self, data: np.ndarray, c: float = 1.0):
         self.c = c  # Mixing coefficients. The sum of all mixing coefficients = 1.0.
         self.data = data
@@ -38,6 +42,9 @@ def log_likelihood(data: np.ndarray, mvnd: List[
     # TODO: UPDATE TEMPORARY CHANGE!!!!!
     for j in range(0, len(mvnd)):
         for k in range(0, n):
+            if mvnd[j].pdf(data[:, k]) == 0:
+                log_likelihood[j, k] = 0
+                continue
             log_likelihood[j, k] = math.log(mvnd[j].c * mvnd[j].pdf(data[:, k]), math.e)
 
     return log_likelihood

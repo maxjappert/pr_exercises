@@ -59,8 +59,11 @@ def gmm_em(data, K: int, iter: int, plot=False) -> list:
                     Use gmm[i].mean, gmm[i].cov, gmm[i].c
     '''
     eps = sys.float_info.epsilon
+    # data = data.T
     [d, N] = data.shape
     gmm = []
+    for _ in range(0, K):
+        gmm.append(MVND)
     # TODO: EXERCISE 2 - Implement E and M step of GMM algorithm
     # Hint - first randomly assign a cluster to each sample
     # Hint - then iteratively update mean, cov and c value of each cluster via EM
@@ -114,7 +117,7 @@ def gmm_em(data, K: int, iter: int, plot=False) -> list:
     covs = [cov_1, cov_2, cov_3]
     means = [mean_1, mean_2, mean_3]
 
-    probs = np.zeros((N, K))
+    probs = np.zeros((K, N))
 
     log_likelihoods = np.zeros((K, N))
     for _ in range(0, iter):
@@ -124,7 +127,7 @@ def gmm_em(data, K: int, iter: int, plot=False) -> list:
             for j in range(0, K):
                 total_probs += mvnds[j].c * mvnds[j].pdf(data[:, i])
             for k in range(0, K):
-                probs[i, k] = mvnds[k].c * mvnds[k].pdf(data[:, i]) / total_probs
+                probs[k, i] = mvnds[k].c * mvnds[k].pdf(data[:, i]) / total_probs
 
         # M-step:
         cs = [0, 0, 0]
@@ -132,9 +135,9 @@ def gmm_em(data, K: int, iter: int, plot=False) -> list:
             a = 0
             b = 0
             for j in range(0, N):
-                cs[k] += mvnds[k].pdf(data[:, j])
-                a += mvnds[k].pdf(data[:, j]) * data[:, j]
-                b += mvnds[k].pdf(data[:, j])
+                cs[k] += probs[k, j]
+                a += probs[k, j] * data[:, j]
+                b += probs[k, j]
             cs[k] *= (1.0 / N)
             means[k] = a / b
 
@@ -143,11 +146,8 @@ def gmm_em(data, K: int, iter: int, plot=False) -> list:
             b = 0
             for i in range(0, N):
                 x_i = data[:, i]
-                a += mvnds[k].pdf(x_i) * np.matmul(np.transpose(x_i - means[k]), (x_i - means[k]))
-                #print(np.transpose(x_i - means[k]).shape)
-                #print((x_i - means[k]).shape)
-                print(x_i - means[k])
-                b += mvnds[k].pdf(x_i)
+                a += probs[k, i] * np.matmul(np.matrix(x_i - means[k]).T, np.matrix(x_i - means[k]))
+                b += probs[k, i]
             covs[k] = a / b
 
         for k in range(0, K):
@@ -165,9 +165,23 @@ def gmm_em(data, K: int, iter: int, plot=False) -> list:
 
         log_likelihoods = log_likelihood(data, mvnds)
 
-    print(mvnds[0].cov.ndim)
-    print(mvnds[1].cov.ndim)
-    print(mvnds[2].cov.ndim)
     gmm_draw(mvnds, data, 'pls work')
     plt.show()
+
+    gmm[0] = MVND
+    gmm[1] = MVND
+    gmm[2] = MVND
+
+    gmm[0].cov = covs[0]
+    gmm[0].mean = means[0]
+    gmm[0].c = cs[0]
+
+    gmm[1].cov = covs[1]
+    gmm[1].mean = means[1]
+    gmm[1].c = cs[1]
+
+    gmm[2].cov = covs[2]
+    gmm[2].mean = means[2]
+    gmm[2].c = cs[2]
+
     return gmm
