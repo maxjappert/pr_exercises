@@ -36,6 +36,10 @@ def log_likelihood(data: np.ndarray, mvnd: List[
     # switch here!
     d, n = data.shape
 
+    if (n < d):
+        data = np.matrix(data).T
+        d, n = data.shape
+
     log_likelihood = np.zeros((len(mvnd), n))
 
     # TODO: EXERCISE 2 - Compute likelihood of data

@@ -58,6 +58,8 @@ def gmm_em(data, K: int, iter: int, plot=False) -> list:
     :return:        List of objects holding the GMM parameters.
                     Use gmm[i].mean, gmm[i].cov, gmm[i].c
     '''
+
+    iter = 1
     eps = sys.float_info.epsilon
     # data = data.T
     [d, N] = data.shape
@@ -102,23 +104,6 @@ def gmm_em(data, K: int, iter: int, plot=False) -> list:
         covs.append(np.ndarray)
         means.append(np.ndarray)
         cs.append(float)
-
-
-    # mvnd_1 = MVND(cluster_one, cs[0])
-    # cov_1 = mvnd_1.cov
-    # mean_1 = mvnd_1.mean
-    #
-    # mvnd_2 = MVND(cluster_two, cs[1])
-    # cov_2 = mvnd_2.cov
-    # mean_2 = mvnd_2.mean
-    #
-    # mvnd_3 = MVND(cluster_three, cs[2])
-    # cov_3 = mvnd_3.cov
-    # mean_3 = mvnd_3.mean
-    #
-    # mvnds = [mvnd_1, mvnd_2, mvnd_3]
-    # covs = [cov_1, cov_2, cov_3]
-    # means = [mean_1, mean_2, mean_3]
 
     probs = np.zeros((K, N))
 
@@ -170,21 +155,5 @@ def gmm_em(data, K: int, iter: int, plot=False) -> list:
 
     gmm_draw(mvnds, data, 'pls work')
     plt.show()
-
-    # gmm[0] = MVND
-    # gmm[1] = MVND
-    # gmm[2] = MVND
-    #
-    # gmm[0].cov = covs[0]
-    # gmm[0].mean = means[0]
-    # gmm[0].c = cs[0]
-    #
-    # gmm[1].cov = covs[1]
-    # gmm[1].mean = means[1]
-    # gmm[1].c = cs[1]
-    #
-    # gmm[2].cov = covs[2]
-    # gmm[2].mean = means[2]
-    # gmm[2].c = cs[2]
 
     return mvnds

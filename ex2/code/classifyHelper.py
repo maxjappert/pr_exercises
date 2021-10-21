@@ -22,8 +22,30 @@ def classify(img: imageHelper, mask: imageHelper, skin_mvnd: List[MVND], notSkin
         skin_mvnd = [skin_mvnd]
     if (type(notSkin_mvnd) != list):
         notSkin_mvnd = [notSkin_mvnd]
-    log_likelihood_of_skin_rgb = log_likelihood(im_rgb_lin, skin_mvnd)[0, :]
-    log_likelihood_of_nonskin_rgb = log_likelihood(im_rgb_lin, notSkin_mvnd)[0, :]
+    #log_likelihood_of_skin_rgb = log_likelihood(im_rgb_lin, skin_mvnd)[0, :]
+    #log_likelihood_of_nonskin_rgb = log_likelihood(im_rgb_lin, notSkin_mvnd)[0, :]
+
+    skin_lls = log_likelihood(im_rgb_lin, skin_mvnd)
+    nonskin_lls = log_likelihood(im_rgb_lin, notSkin_mvnd)
+
+    K, n = skin_lls
+
+    log_likelihood_of_skin_rgb = np.zeros(n)
+    log_likelihood_of_nonskin_rgb = np.zeros(n)
+
+    assert(skin_lls.shape == nonskin_lls.shape)
+
+    for i in range(0, n):
+        s_value_to_append = 0
+        ns_value_to_append = 0
+
+        for k in range(0, K):
+            # here we should multiply by c but there's an issue
+            s_value_to_append += skin_lls[k, n]
+            ns_value_to_append += nonskin_lls[k, n]
+
+        log_likelihood_of_skin_rgb[i] = s_value_to_append
+        log_likelihood_of_nonskin_rgb[i] = ns_value_to_append
 
     testmask = mask.getLinearImageBinary().astype(int)[:, 0]
     npixels = len(testmask)
