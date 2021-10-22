@@ -101,10 +101,84 @@ false negative rate = 0.0774537037037037
 	\item Skin prior: 0.3699921875\\Non-skin prior: 0.6300078124999999
 	\item The prior represents the probability of a sample (in this case a pixel) belonging to a class without taking any evidence into account (in this case without considering the actual image). Therefore we calculated the priors by calculating the the proportion of the training mask which is classified as skin or non-skin for the training image. Thereby the priors represent the naive probability of a pixel belonging to each class, without considering the actual pixel to be classified. 
 	\item While including the prior into the calculation improves the classification performance on the training image, the classification is less accurate with the prior included for both images the algorithm hasn't seen yet. This is because the prior has overfitted the training data. The proportion of skin in an image is not correlated to how skin can be classified generally while that proportion is very closely correlated to the image which was used for calculating this value.
-	\item 
+	\item \texttt{TODO}
+	\item These are the obtained cluster means from the toy example:
+	\begin{enumerate}[Cluster 1:]
+		\item \texttt{[-2.92220404  4.05499623]}
+		\item \texttt{[5.18098269 0.89707749]}
+		\item \texttt{[-2.85406695 -0.84148645]}
+	\end{enumerate}
+	\item This is the first figure from the toy example:
+	
+		\includegraphics[width=6in]{toy_beginning.png}\\
+		
+		Ths is the final figure from the toy example:
+		
+		\includegraphics[width=6in]{toy_end.png}\\
+	\item \texttt{TODO}
+	\item \texttt{TODO}
+	\item No, it can converge to a local optimum which isn't the global optimum. But why?
+	\item The following is the console output for the GMM skin detection. It includes the error percentages both with and without the prior. \\
+	\begin{verbatim}
+GMM exercise - Skin detection
+##########-##########-##########
+TRAINING DATA
+(128000,)
+(128000,)
+----- ----- -----
+Total Error WITHOUT Prior = 5248
+false positive rate = 0.027796875
+false negative rate = 0.013203125
+----- ----- -----
+Total Error WITH Prior = 4393
+false positive rate = 0.0214453125
+false negative rate = 0.012875
+----- ----- -----
+skin prior:  0.3699921875
+nonskin prior:  0.6300078124999999
+TEST DATA PORTRAIT
+(166400,)
+(166400,)
+----- ----- -----
+Total Error WITHOUT Prior = 20252
+false positive rate = 0.11887620192307692
+false negative rate = 0.0028305288461538463
+----- ----- -----
+Total Error WITH Prior = 28862
+false positive rate = 0.17165865384615384
+false negative rate = 0.0017908653846153847
+----- ----- -----
+skin prior:  0.3699921875
+nonskin prior:  0.6300078124999999
+TEST DATA FAMILY
+(540000,)
+(540000,)
+----- ----- -----
+Total Error WITHOUT Prior = 33852
+false positive rate = 0.005120370370370371
+false negative rate = 0.05756851851851852
+----- ----- -----
+Total Error WITH Prior = 34285
+false positive rate = 0.005520370370370371
+false negative rate = 0.057970370370370373
+----- ----- -----
+skin prior:  0.3699921875
+nonskin prior:  0.6300078124999999
+##########-##########-##########
+
+	\end{verbatim}
+
+The next three images are the three final images which result from the GMM skin detection.\\
+
+	\includegraphics[width=6in]{Training-GMM.pdf}\\
+	
+	\includegraphics[width=6in]{Test-portrait-GMM.pdf}\\
+
+	\includegraphics[width=6in]{Test-family-GMM.pdf}\\
+
+\item \texttt{TODO}
+\item \texttt{TODO}
+
 \end{enumerate}
-
-
-
 
 \end{document}

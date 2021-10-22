@@ -34,21 +34,23 @@ def log_likelihood(data: np.ndarray, mvnd: List[
     '''
 
     # switch here!
-    d, n = data.shape
+    n, d = data.shape
 
+    # To make the dimensions uniform
     if (n < d):
         data = np.matrix(data).T
-        d, n = data.shape
+        n, d = data.shape
 
     log_likelihood = np.zeros((len(mvnd), n))
 
-    # TODO: EXERCISE 2 - Compute likelihood of data
-    # TODO: UPDATE TEMPORARY CHANGE!!!!!
+    # EXERCISE 2 - Compute likelihood of data
+    # This formula for calculating the log likelihood is copied from the slides.
+    # Using a logarithm allows for summing instead of multiplying.
     for j in range(0, len(mvnd)):
         for k in range(0, n):
-            if mvnd[j].pdf(data[:, k]) == 0:
+            if mvnd[j].pdf(data[k, :]) == 0 or mvnd[j].pdf(data[k, :]) >= math.inf or mvnd[j].pdf(data[k, :]) <= - math.inf:
                 log_likelihood[j, k] = 0
                 continue
-            log_likelihood[j, k] = math.log(mvnd[j].c * mvnd[j].pdf(data[:, k]), math.e)
+            log_likelihood[j, k] = math.log(mvnd[j].c * mvnd[j].pdf(data[k, :]), math.e)
 
     return log_likelihood

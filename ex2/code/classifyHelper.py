@@ -22,30 +22,8 @@ def classify(img: imageHelper, mask: imageHelper, skin_mvnd: List[MVND], notSkin
         skin_mvnd = [skin_mvnd]
     if (type(notSkin_mvnd) != list):
         notSkin_mvnd = [notSkin_mvnd]
-    #log_likelihood_of_skin_rgb = log_likelihood(im_rgb_lin, skin_mvnd)[0, :]
-    #log_likelihood_of_nonskin_rgb = log_likelihood(im_rgb_lin, notSkin_mvnd)[0, :]
-
-    skin_lls = log_likelihood(im_rgb_lin, skin_mvnd)
-    nonskin_lls = log_likelihood(im_rgb_lin, notSkin_mvnd)
-
-    K, n = skin_lls
-
-    log_likelihood_of_skin_rgb = np.zeros(n)
-    log_likelihood_of_nonskin_rgb = np.zeros(n)
-
-    assert(skin_lls.shape == nonskin_lls.shape)
-
-    for i in range(0, n):
-        s_value_to_append = 0
-        ns_value_to_append = 0
-
-        for k in range(0, K):
-            # here we should multiply by c but there's an issue
-            s_value_to_append += skin_lls[k, n]
-            ns_value_to_append += nonskin_lls[k, n]
-
-        log_likelihood_of_skin_rgb[i] = s_value_to_append
-        log_likelihood_of_nonskin_rgb[i] = ns_value_to_append
+    log_likelihood_of_skin_rgb = np.sum(log_likelihood(im_rgb_lin, skin_mvnd), axis=0)
+    log_likelihood_of_nonskin_rgb = np.sum(log_likelihood(im_rgb_lin, notSkin_mvnd), axis=0)
 
     testmask = mask.getLinearImageBinary().astype(int)[:, 0]
     npixels = len(testmask)
@@ -61,6 +39,9 @@ def classify(img: imageHelper, mask: imageHelper, skin_mvnd: List[MVND], notSkin
     fn = 0
     fp = 0
 
+    # The imgMinMask for a given index n is 0 iff the pixel was correctly classified (see the initialization above,
+    # where the classification gets compared to the ground truth mask by converting to a binary image and subtracting).
+    # if imgMinMask[n] == 1, then that pixel was classified as a false positive, and vice versa with -1.
     for n in range(0, len(imgMinMask)):
         if imgMinMask[n] == 1:
             fp += 1
@@ -78,9 +59,6 @@ def classify(img: imageHelper, mask: imageHelper, skin_mvnd: List[MVND], notSkin
     print('false negative rate =', fn)
 
     #EXERCISE 2 - Error Rate with prior
-
-    skin_prob = log_likelihood_of_skin_rgb * prior_skin
-    nonskin_prob = log_likelihood_of_nonskin_rgb * prior_nonskin
 
     log_likelihood_rgb_with_prior = log_likelihood_of_skin_rgb * prior_skin - log_likelihood_of_nonskin_rgb * prior_nonskin
     skin_prior = (log_likelihood_rgb_with_prior > 0).astype(int)

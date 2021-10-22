@@ -59,18 +59,19 @@ def gmm_em(data, K: int, iter: int, plot=False) -> list:
                     Use gmm[i].mean, gmm[i].cov, gmm[i].c
     '''
 
-    iter = 1
     eps = sys.float_info.epsilon
-    # data = data.T
     [d, N] = data.shape
     gmm = []
     for _ in range(0, K):
         gmm.append(MVND)
-    # TODO: EXERCISE 2 - Implement E and M step of GMM algorithm
+    # EXERCISE 2 - Implement E and M step of GMM algorithm
     # Hint - first randomly assign a cluster to each sample
     # Hint - then iteratively update mean, cov and c value of each cluster via EM
     # Hint - use the gmm_draw() function to visualize each step
 
+    # This is just initialization, which consists of randomly assigning each datapoint
+    # to one of K clusters. Each cluster is represented by an MVND object, which
+    # again consists of a mean vector, a covariance matrix and a weight c.
     clusters = []
     indexes = []
 
@@ -108,7 +109,10 @@ def gmm_em(data, K: int, iter: int, plot=False) -> list:
     probs = np.zeros((K, N))
 
     log_likelihoods = np.zeros((K, N))
-    for _ in range(0, iter):
+
+    # Here we iteratively perform the E- and M-steps as demonstrated on slide 27.
+    # The formulas are copied from there.
+    for step in range(0, iter):
         # E-step:
         for i in range(0, N):
             total_probs = 0
@@ -143,17 +147,24 @@ def gmm_em(data, K: int, iter: int, plot=False) -> list:
             mvnds[k].mean = means[k]
             mvnds[k].c = cs[k]
 
+        # Here we check the difference between the log_likelihood of the previous and the current iterations
+        # If the absolute difference is smaller or equal to the system epsilon (so if the difference is de facto
+        # inexistent, then we assume that the algorithm has converged and we quit the loop.
         new_log_likelihoods = log_likelihood(data, mvnds)
 
         difference = abs(new_log_likelihoods - log_likelihoods)
         sum_of_difference = np.sum(difference)
 
-        if sum_of_difference < eps:
+        if sum_of_difference <= eps:
             break
 
         log_likelihoods = log_likelihood(data, mvnds)
 
-    gmm_draw(mvnds, data, 'pls work')
+        if plot:
+            gmm_draw(mvnds, data, str(step))
+            plt.show()
+
+    gmm_draw(mvnds, data, 'after')
     plt.show()
 
     return mvnds

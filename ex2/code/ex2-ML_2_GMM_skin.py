@@ -40,14 +40,13 @@ def gmmSkinDetection() -> None:
     classify(testimageObj, testmaskObj, gmms, gmmn, "Test-portrait-GMM", prior_skin=prior_skin,
              prior_nonskin=prior_nonskin)
 
-    # todo: reactivate
-    # print("TEST DATA FAMILY")
-    # testmaskObj = imageHelper()
-    # testmaskObj.loadImageFromFile(os.path.join(dataPath, 'mask-test2.png'))
-    # testimageObj = imageHelper()
-    # testimageObj.loadImageFromFile(os.path.join(dataPath, 'test2.png'))
-    # classify(testimageObj, testmaskObj, gmms, gmmn, "Test-family-GMM", prior_skin=prior_skin,
-    #          prior_nonskin=prior_nonskin)
+    print("TEST DATA FAMILY")
+    testmaskObj = imageHelper()
+    testmaskObj.loadImageFromFile(os.path.join(dataPath, 'mask-test2.png'))
+    testimageObj = imageHelper()
+    testimageObj.loadImageFromFile(os.path.join(dataPath, 'test2.png'))
+    classify(testimageObj, testmaskObj, gmms, gmmn, "Test-family-GMM", prior_skin=prior_skin,
+             prior_nonskin=prior_nonskin)
 
     plt.show()
 
