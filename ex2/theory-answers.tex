@@ -2,15 +2,10 @@
 
 \usepackage{graphicx}
 \usepackage{svg}
-\usepackage{graphbox}
-\usepackage{multicol}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{mathtools}
 \usepackage{pgfplots}
-\usepackage{cancel}
-\usepackage{xcolor,colortbl}
-\usepackage[colorlinks=true, allcolors=blue]{hyperref}
 \usepackage{float}
 
 \usepackage{enumerate}
@@ -23,10 +18,6 @@
 
 \parindent=.3in
 \pagestyle{plain}
-
-\definecolor{Gray}{gray}{0.9}
-\definecolor{Yellow}{rgb}{255,255,0}
-\newcolumntype{y}{>{\columncolor{Yellow}}c}
 
 \allowdisplaybreaks
 
@@ -47,7 +38,7 @@ Nico Aebischer
 Max Jappert
 
 }
-\end{document}
+\end{centering}
 
 \begin{enumerate}[1.]
 	\item The error rates for the three images can be seen in the output of our program, which is listed on this page. Thereafter the three outputted images are shown.
@@ -101,7 +92,7 @@ false negative rate = 0.0774537037037037
 	\item Skin prior: 0.3699921875\\Non-skin prior: 0.6300078124999999
 	\item The prior represents the probability of a sample (in this case a pixel) belonging to a class without taking any evidence into account (in this case without considering the actual image). Therefore we calculated the priors by calculating the the proportion of the training mask which is classified as skin or non-skin for the training image. Thereby the priors represent the naive probability of a pixel belonging to each class, without considering the actual pixel to be classified. 
 	\item While including the prior into the calculation improves the classification performance on the training image, the classification is less accurate with the prior included for both images the algorithm hasn't seen yet. This is because the prior has overfitted the training data. The proportion of skin in an image is not correlated to how skin can be classified generally while that proportion is very closely correlated to the image which was used for calculating this value.
-	\item \texttt{The results were more or less accurate, but due to the fact, that the prior was created specifically for a picture. We therefore have to assume, that it would be worse for random different types of pictures. One could also estimate prior values for different types of pictures. These could be group pictures, portraits of individuals, landscapes with some people in it etc. Then, for each type, one could estimate the class in advance.}
+	\item The results were more or less accurate, but due to the fact that the prior was created specifically for a type of picture. We therefore have to assume that it would be worse for random different types of pictures, e. g. pictures of only an arm or of a person wearing a mask. One could also estimate prior values for different types of pictures. These could be group pictures, such as portraits of individuals, landscapes with some people in it etc. Then, for each type, one could estimate the class in advance.
 	\item These are the obtained cluster means from the toy example:
 	\begin{enumerate}[Cluster 1:]
 		\item \texttt{[-2.92220404  4.05499623]}
@@ -112,12 +103,12 @@ false negative rate = 0.0774537037037037
 	
 		\includegraphics[width=6in]{toy_beginning.png}\\
 		
-		Ths is the final figure from the toy example:
+		This is the final figure from the toy example:
 		
 		\includegraphics[width=6in]{toy_end.png}\\
-	\item \texttt{In this application, the variables "k" are the hidden variables. They act as a mapping of datapoints to the component k.}
-	\item \texttt{We had to initialize the algorithm with \theta. \theta is made up of three components: The c-value, mean and covariance matrix for each class k. The value of \theta is critical for the algorithm, because it determines the number of iterations necessary to obtain a good enough classification. If the datapoints (which are randomly assigned to the labels k in the beginning) happen to be close to the expected classification, the algorithm terminates quite quickly while in a "bad" first assignment of points x to k, many iterations are needed in order to come up with a good solution.}
-	\item No, it can converge to a local optimum which isn't the global optimum. But why?
+	\item In this application, the variables $k$ are the hidden variables. They act as a mapping of data points to the component $k$.
+	\item We had to initialize the algorithm with $\theta$. $\theta$ is made up of three components: The $c$-value, the mean vector and the covariance matrix for each class $k$. The value of $\theta$ is critical for the algorithm, because it determines the number of iterations necessary to obtain a good enough classification. If the data points (which are randomly assigned to the labels $k$ in the beginning) happen to be close to the expected classification, the algorithm terminates quite quickly while in a "bad" first assignment of points $x$ to $k$, many iterations are needed in order to come up with a good solution.
+	\item No, it can converge to a local optimum which isn't the global optimum.
 	\item The following is the console output for the GMM skin detection. It includes the error percentages both with and without the prior. \\
 	\begin{verbatim}
 GMM exercise - Skin detection
@@ -176,8 +167,8 @@ The next three images are the three final images which result from the GMM skin 
 
 	\includegraphics[width=6in]{Test-family-GMM.pdf}\\
 
-\item \texttt{The ML-principle is used to initialize an MVND. The mean and covariance are estimated according to the ML-principle.}
-\item \texttt{In ML estimations, we do not incorporate any information about the distribution of \theta, except the type of distribution (e.g. normal distribution). We then estimate \theta by trying to maximize the pdf for the datapoints. In MAP, we do not look at \theta as a parameter, but as a random vector. We then use Bayes rule to find out the probability of \theta, using information about the distribution of it in form of the prior.}
+\item The ML-principle is used to initialize an MVND. The mean and covariance are estimated according to the ML-principle.
+\item In ML estimations, we do not incorporate any information about the distribution of $\theta$, except the type of distribution (e.g. normal distribution). We then estimate $\theta$ by trying to maximize the pdf for the data points. In MAP, we do not look at $\theta$ as a parameter, but as a random vector. We then use Bayes rule to find out the probability of $\theta$, using information about the distribution of it in form of the prior.
 \end{enumerate}
 
 \end{document}
