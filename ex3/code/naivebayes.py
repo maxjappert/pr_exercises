@@ -47,11 +47,12 @@ class NaiveBayes():
         spam_words = []
         checked_words = []
         final_dictionary = []
-        #priorSpam = 0
 
+        # iterate over individual files
         for filename in files:
             spam = False
 
+            # check if the message is actually spam
             if "spmsga" in filename:
                 spam = True
 
@@ -59,12 +60,15 @@ class NaiveBayes():
 
             words = self._extractWords(contents)
 
+            # add words of each message to either the ham- or spam-bin
             for word in words:
                 if spam:
                     spam_words.append(word)
                 else:
                     ham_words.append(word)
 
+        # iterate over all words and add them to the dictionary if they haven't already been added
+        # while adding we iterate over both lists of words and count each occurrence
         for word in set(spam_words + ham_words):
             if not checked_words.__contains__(word):
                 spam_word_counter = 0
@@ -76,15 +80,14 @@ class NaiveBayes():
                     if candidate == word:
                         ham_word_counter += 1
 
-                if ham_word_counter != 0 and spam_word_counter != 0:
-                    indicativeness = math.log(spam_word_counter / ham_word_counter)
-                else:
-                    indicativeness = 0
+                # laplacian smoothing to avoid a math domain error
+                indicativeness = math.log((spam_word_counter + 1) / (ham_word_counter + 1))
 
                 checked_words.append(word)
                 final_dictionary.append(Word(word, ham_word_counter, spam_word_counter, indicativeness))
 
-        # TODO: potentially delete this laplacian smoothing, which was only implemented as a temporary measure to counter a math domain error
+        # we use this as a prior and not the logPrior, since it seems more intuitive to simply use this for
+        # the spam class and 1.0 - priorSpam for the ham class
         self.priorSpam = len(spam_words) / (len(spam_words) + len(ham_words))
 
         print("spam prior: ", self.priorSpam)
@@ -106,26 +109,32 @@ class NaiveBayes():
         spam_log_probs = []
         ham_log_probs = []
 
+        # this is used to skip words in the message which aren't in our dictionary
         offset = 0
 
         for i in range(0, number_of_features):
             if not self.dictionary.__contains__(txt[i]):
                 offset += 1
 
+            # ditto
             j = i + offset
 
             if j >= len(txt):
                 break
 
+            # find the word in the dictionary and calculate the log probabilities for both classes from the
+            # entry in the dictionary. the formulas used are copied from the slides
             for word in self.dictionary:
                 if word.word == txt[j]:
                     spam_log_probs.append(math.log((word.numOfSpamWords + 1) / (word.numOfHamWords + word.numOfSpamWords + 1)))
                     ham_log_probs.append(math.log((word.numOfHamWords + 1) / (word.numOfHamWords + word.numOfSpamWords + 1)))
                     break
 
+        # the posteriors are also calculated with formulas copied from the slides
         posterior_spam = math.log(self.priorSpam) + sum(spam_log_probs)
         posterior_ham = math.log(1.0 - self.priorSpam) + sum(ham_log_probs)
 
+        # if the posterior for the spam class is higher, then we classify the message to said class
         return posterior_spam > posterior_ham
 
     def classifyAndEvaluateAllInFolder(self, msgDirectory: str, number_of_features: int,
@@ -165,7 +174,7 @@ class NaiveBayes():
 
         temp_dictionary.sort(key=lambda x: x.numOfSpamWords, reverse=True)
 
-        for i in range (0, num):
+        for i in range(0, num):
             print(temp_dictionary[len(temp_dictionary) - i - 1].word)
 
 
