@@ -25,7 +25,7 @@ def logregToy() -> None:
     test_x[0, :] = 1.0  # adding row of 1s in X matrix to account for w0 term
 
     # training coefficients
-    regularization_coefficients = [0.0, 0.1, 1.0]
+    regularization_coefficients = [0]#[0.0, 0.1, 1.0]
     # without regularization : regularization_coefficients = 0
     # with regularization    : regularization_coefficients = 1 / 2*sigma^2
 

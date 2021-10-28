@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 
 
@@ -13,7 +15,20 @@ class LOGREG(object):
 
     def activationFunction(self, w: np.ndarray, X: np.ndarray) -> np.ndarray:
         # TODO: Implement logistic function
-        return ???
+
+        n, d = X.shape
+
+        print(X.shape)
+
+        print(w.shape)
+
+        result = np.ndarray(n-1)
+
+        for i in range(1, n):
+            result[i-1] = 1.0 / (1 + math.exp(-(w * X[i, :] + X[0, :])))
+
+        # from slide 11
+        return result
 
     def _costFunction(self, w: np.ndarray, X: np.ndarray, y: np.ndarray) -> float:
         '''
@@ -24,8 +39,15 @@ class LOGREG(object):
         :return: cost
         '''
         # TODO: Implement equation of cost function for posterior p(y=1|X,w)
-        cost = ???
-        regularizationTerm = ???
+
+        posterior = self.activationFunction(w, X)
+
+        cost = 0
+
+        regularizationTerm = 0
+
+        for i in range (0, len(y)):
+            cost += y[i] * math.log(posterior[i] / (1 - posterior[i])) + math.log(1 - posterior[i])
 
         return cost + regularizationTerm
 
@@ -38,8 +60,13 @@ class LOGREG(object):
         :return: first derivative of the model parameters
         '''
         # TODO: Calculate derivative of loglikelihood function for posterior p(y=1|X,w)
-        firstDerivative = ???
-        regularizationTerm = ???
+        firstDerivative = np.zeros(len(y))
+        regularizationTerm = 0
+
+        sigmoid = self.activationFunction(w, X)
+
+        for i in range (0, len(y)):
+            firstDerivative += (y[i] - sigmoid[i]) * X[i+1, :]
 
         return firstDerivative + regularizationTerm
 
