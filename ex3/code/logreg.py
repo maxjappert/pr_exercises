@@ -16,16 +16,19 @@ class LOGREG(object):
     def activationFunction(self, w: np.ndarray, X: np.ndarray) -> np.ndarray:
         # TODO: Implement logistic function
 
-        n, d = X.shape
+        #print(np.matrix(X).shape)
+        d, n = X.shape
 
-        print(X.shape)
+        result = np.ndarray(n)
 
-        print(w.shape)
-
-        result = np.ndarray(n-1)
-
-        for i in range(1, n):
-            result[i-1] = 1.0 / (1 + math.exp(-(w * X[i, :] + X[0, :])))
+        for i in range(0, n):
+            #print(w.T.shape)
+            #print(np.matrix(X[:, i]).shape)
+            #print(w.T*np.matrix(X[:, i]).T + w[0])
+            #print(np.matrix(w))
+            #print(np.matrix(X[:, i]))
+            #print(math.exp(-(np.matrix(w).T@np.matrix(X[:, i]).T)))
+            result[i] = 1.0 / (1 + math.exp(-(np.matrix(w).T@np.matrix(X[:, i]).T)))
 
         # from slide 11
         return result
@@ -47,6 +50,9 @@ class LOGREG(object):
         regularizationTerm = 0
 
         for i in range (0, len(y)):
+            if posterior[i] < self._eps:
+                posterior[i] = self._eps
+
             cost += y[i] * math.log(posterior[i] / (1 - posterior[i])) + math.log(1 - posterior[i])
 
         return cost + regularizationTerm
@@ -65,8 +71,8 @@ class LOGREG(object):
 
         sigmoid = self.activationFunction(w, X)
 
-        for i in range (0, len(y)):
-            firstDerivative += (y[i] - sigmoid[i]) * X[i+1, :]
+        for i in range(0, len(y)):
+            firstDerivative += (y[i] - sigmoid[i])@X[:, i]
 
         return firstDerivative + regularizationTerm
 
@@ -77,8 +83,18 @@ class LOGREG(object):
         :return: the hessian matrix (second derivative of the model parameters)
         '''
         # TODO: Calculate Hessian matrix of loglikelihood function for posterior p(y=1|X,w)
-        hessian = ???
-        regularizationTerm = ???
+
+        n, d = X.shape
+
+        hessian = np.zeros((n, n))
+        regularizationTerm = 0
+
+        sigma = self.activationFunction(np.matrix(w), X)
+
+        for i in range (0, n):
+            hessian += np.matrix(X[:, i]).T@np.matrix(X[:, i])*sigma[i]*(1 - sigma[i])
+            assert sigma[i] * (1 - sigma[i]) >= 0
+
         return - hessian + regularizationTerm
 
     def _optimizeNewtonRaphson(self, X: np.ndarray, y: np.ndarray, number_of_iterations: int) -> np.ndarray:
@@ -100,8 +116,12 @@ class LOGREG(object):
             oldposteriorloglikelihood = posteriorloglikelihood
             w_old = w
             h = self._calculateHessian(w, X)
-            w_update = ???
-            w = ???
+            #sigma = self.activationFunction(w_old, X)
+
+            w = w_old - np.linalg.inv(h)@self._calculateDerivative(w_old, X, y)
+            print(w_old.shape)
+            print(w.shape)
+            w_update = w - w_old
             posteriorloglikelihood = self._costFunction(w, X, y)
             if self.r == 0:
                 # TODO: What happens if this condition is removed?
@@ -111,6 +131,11 @@ class LOGREG(object):
 
             # TODO: Implement convergence check based on when w_update is close to zero
             # Note: You can make use of the class threshold value self._threshold
+
+            for j in range(0, len(w)):
+                if abs(w_update[j]) < self._eps:
+                    break
+
         print('final posteriorloglikelihood', posteriorloglikelihood, 'final likelihood',
               np.exp(posteriorloglikelihood))
 
@@ -135,7 +160,12 @@ class LOGREG(object):
         '''
         # TODO: Implement classification function for each entry in the data matrix
         numberOfSamples = X.shape[1]
-        predictions = ???
+
+        predictions = np.zeros(numberOfSamples)
+
+        for i in range(0, numberOfSamples):
+            predictions[i] = 0 if np.matrix(self.w).T@X[:, i] + self.w[0] < 0 else 1
+
         return predictions
 
     def printClassification(self, X: np.ndarray, y: np.ndarray) -> None:
@@ -146,5 +176,15 @@ class LOGREG(object):
         '''
         # TODO: Implement print classification
         numberOfSamples = X.shape[1]
+
+        predictions = self.classify(X)
+
+        numOfMissclassified = 0.0
+
+        for i in range(0, numberOfSamples):
+            if predictions[i] != y[i]:
+                numOfMissclassified += 1
+
+        totalError = numOfMissclassified / numberOfSamples
 
         print("{}/{} misclassified. Total error: {:.2f}%.".format(numOfMissclassified, numberOfSamples, totalError))
