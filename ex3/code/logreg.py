@@ -19,16 +19,13 @@ class LOGREG(object):
         #print(np.matrix(X).shape)
         d, n = X.shape
 
-        result = np.ndarray(n)
+        result = np.zeros(n)
 
         for i in range(0, n):
-            #print(w.T.shape)
-            #print(np.matrix(X[:, i]).shape)
-            #print(w.T*np.matrix(X[:, i]).T + w[0])
-            #print(np.matrix(w))
-            #print(np.matrix(X[:, i]))
-            #print(math.exp(-(np.matrix(w).T@np.matrix(X[:, i]).T)))
-            result[i] = 1.0 / (1 + math.exp(-(np.matrix(w).T@np.matrix(X[:, i]).T)))
+            exponent = -(np.matrix(w).T@np.matrix(X[:, i]).T)
+            result[i] = 1.0 / (1 + math.exp(exponent))
+            assert(0.0 <= result[i] <= 1.0)
+
 
         # from slide 11
         return result
@@ -52,8 +49,12 @@ class LOGREG(object):
         for i in range (0, len(y)):
             if posterior[i] < self._eps:
                 posterior[i] = self._eps
+            elif posterior[i] == 1:
+                posterior[i] -= self._eps
 
+            # cost += y[i] * math.log(posterior[i] / (1 - posterior[i])) + math.log(1 - posterior[i])
             cost += y[i] * math.log(posterior[i] / (1 - posterior[i])) + math.log(1 - posterior[i])
+
 
         return cost + regularizationTerm
 
@@ -66,13 +67,14 @@ class LOGREG(object):
         :return: first derivative of the model parameters
         '''
         # TODO: Calculate derivative of loglikelihood function for posterior p(y=1|X,w)
-        firstDerivative = np.zeros(len(y))
+        firstDerivative = np.zeros(X.shape[0])
         regularizationTerm = 0
 
         sigmoid = self.activationFunction(w, X)
 
         for i in range(0, len(y)):
-            firstDerivative += (y[i] - sigmoid[i])@X[:, i]
+            firstDerivative += (y[i] - sigmoid[i])*X[:, i]
+            #firstDerivative += X[:, i]
 
         return firstDerivative + regularizationTerm
 
@@ -84,14 +86,14 @@ class LOGREG(object):
         '''
         # TODO: Calculate Hessian matrix of loglikelihood function for posterior p(y=1|X,w)
 
-        n, d = X.shape
+        d, n = X.shape
 
-        hessian = np.zeros((n, n))
+        hessian = np.zeros((d, d))
         regularizationTerm = 0
 
         sigma = self.activationFunction(np.matrix(w), X)
 
-        for i in range (0, n):
+        for i in range(0, n):
             hessian += np.matrix(X[:, i]).T@np.matrix(X[:, i])*sigma[i]*(1 - sigma[i])
             assert sigma[i] * (1 - sigma[i]) >= 0
 
@@ -118,9 +120,9 @@ class LOGREG(object):
             h = self._calculateHessian(w, X)
             #sigma = self.activationFunction(w_old, X)
 
-            w = w_old - np.linalg.inv(h)@self._calculateDerivative(w_old, X, y)
-            print(w_old.shape)
-            print(w.shape)
+            w = w_old - np.linalg.inv(h)@np.matrix(self._calculateDerivative(w_old, X, y)).T
+            #print(w_old.shape)
+            #print(w.shape)
             w_update = w - w_old
             posteriorloglikelihood = self._costFunction(w, X, y)
             if self.r == 0:
