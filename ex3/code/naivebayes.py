@@ -175,7 +175,7 @@ class NaiveBayes():
         temp_dictionary.sort(key=lambda x: x.numOfSpamWords, reverse=True)
 
         for i in range(0, num):
-            print(temp_dictionary[len(temp_dictionary) - i - 1].word)
+            print(temp_dictionary[i].word)
 
 
     def printMostPopularHamWords(self, num: int) -> None:
@@ -193,13 +193,21 @@ class NaiveBayes():
         print("{} most distinct SPAM words:".format(num))
         # TODO: print the 'num' most indicative SPAM words from the dictionary
 
+        temp_dictionary = self.dictionary
+
+        temp_dictionary.sort(key=lambda x: x.indicativeness, reverse=True)
+
         for i in range (0, num):
-            print(self.dictionary[i].word)
+            print(temp_dictionary[i].word)
 
 
     def printMostindicativeHamWords(self, num: int) -> None:
         print("{} most distinct HAM words:".format(num))
         # TODO: print the 'num' most indicative HAM words from the dictionary
 
+        temp_dictionary = self.dictionary
+
+        temp_dictionary.sort(key=lambda x: x.indicativeness, reverse=False)
+
         for i in range (0, num):
-            print(self.dictionary[len(self.dictionary) - i - 1].word)
+            print(temp_dictionary[i].word)

@@ -9,31 +9,18 @@ class LOGREG(object):
     '''
 
     def __init__(self, regularization: float = 0):
-        #self.r = regularization
-        self.r = 0
+        self.r = regularization
         self._threshold = 10e-9
         self._eps = self._threshold
 
     def activationFunction(self, w: np.ndarray, X: np.ndarray) -> np.ndarray:
         # TODO: Implement logistic function
 
-        #print(np.matrix(X).shape)
-        d, n = X.shape
+        exponents = -(w.T@X)
 
-        result = np.zeros(n)
+        result = 1.0 / (1.0 + np.exp(exponents))
 
-        for i in range(0, n):
-            exponent = -(np.matrix(w).T@np.matrix(X[:, i]).T)
-            if exponent > 704:
-                exponent = 100
-            elif exponent < -704:
-                exponent = -100
-
-            result[i] = 1.0 / (1.0 + math.exp(exponent))
-            assert(0.0 <= result[i] <= 1.0)
-
-        # from slide 11
-        return result
+        return np.squeeze(np.asarray(result))
 
     def _costFunction(self, w: np.ndarray, X: np.ndarray, y: np.ndarray) -> float:
         '''
@@ -49,7 +36,6 @@ class LOGREG(object):
 
         cost = 0
 
-        regularizationTerm = 0
 
         for i in range(0, len(y)):
             if posterior[i] < self._eps:
@@ -57,9 +43,9 @@ class LOGREG(object):
             elif posterior[i] == 1:
                 posterior[i] -= self._eps
 
-            cost += y[i] * math.log(posterior[i] / (1.0 - posterior[i])) + math.log(1.0 - posterior[i])
+            cost += y[i] * math.log(posterior[i] / (1.0 - posterior[i])) + math.log(1.0 - posterior[i]) - self.r * np.linalg.norm(w[1:], 2)
 
-        return cost + regularizationTerm
+        return cost
 
     def _calculateDerivative(self, w: np.ndarray, X: np.ndarray, y: np.ndarray) -> np.ndarray:
         '''
@@ -70,15 +56,19 @@ class LOGREG(object):
         :return: first derivative of the model parameters
         '''
         # TODO: Calculate derivative of loglikelihood function for posterior p(y=1|X,w)
-        firstDerivative = np.zeros(X.shape[0])
-        regularizationTerm = 0
 
         sigmoid = self.activationFunction(w, X)
 
-        for i in range(0, len(y)):
-            firstDerivative += (y[i] - sigmoid[i])*X[:, i]
+        firstDerivative = np.zeros(X.shape[0])
+        firstDerivative += np.sum((y-sigmoid)*X, axis=1)
 
-        return firstDerivative + regularizationTerm
+        regVec = 2 * self.r * w.T
+
+        regVec[0] = 0
+
+        firstDerivative -= np.squeeze(np.asarray(regVec))
+
+        return firstDerivative
 
     def _calculateHessian(self, w: np.ndarray, X: np.ndarray) -> np.ndarray:
         '''
@@ -90,8 +80,10 @@ class LOGREG(object):
 
         d, n = X.shape
 
-        hessian = np.zeros((d, d))
-        regularizationTerm = 0
+        regMatrix = np.zeros((d, d))
+
+        for i in range(1, d):
+            regMatrix[i, i] = self.r
 
         sigma = self.activationFunction(np.matrix(w), X)
 
@@ -101,12 +93,8 @@ class LOGREG(object):
             S[i, i] = sigma[i]
 
         hessian = np.matrix(X)@np.matrix(S)@np.matrix(X).T
-        #
-        # for i in range(0, n):
-        #     hessian += np.matrix(X[:, i]).T@np.matrix(X[:, i])*sigma[i]*(1 - sigma[i])
-        #     assert sigma[i] * (1 - sigma[i]) >= 0
 
-        return - hessian + regularizationTerm
+        return - hessian + regMatrix
 
     def _optimizeNewtonRaphson(self, X: np.ndarray, y: np.ndarray, number_of_iterations: int) -> np.ndarray:
         '''
