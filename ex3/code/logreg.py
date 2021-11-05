@@ -9,7 +9,8 @@ class LOGREG(object):
     '''
 
     def __init__(self, regularization: float = 0):
-        self.r = regularization
+        #self.r = regularization
+        self.r = 0
         self._threshold = 10e-9
         self._eps = self._threshold
 
@@ -23,9 +24,13 @@ class LOGREG(object):
 
         for i in range(0, n):
             exponent = -(np.matrix(w).T@np.matrix(X[:, i]).T)
-            result[i] = 1.0 / (1 + math.exp(exponent))
-            assert(0.0 <= result[i] <= 1.0)
+            if exponent > 704:
+                exponent = 100
+            elif exponent < -704:
+                exponent = -100
 
+            result[i] = 1.0 / (1.0 + math.exp(exponent))
+            assert(0.0 <= result[i] <= 1.0)
 
         # from slide 11
         return result
@@ -46,15 +51,13 @@ class LOGREG(object):
 
         regularizationTerm = 0
 
-        for i in range (0, len(y)):
+        for i in range(0, len(y)):
             if posterior[i] < self._eps:
                 posterior[i] = self._eps
             elif posterior[i] == 1:
                 posterior[i] -= self._eps
 
-            # cost += y[i] * math.log(posterior[i] / (1 - posterior[i])) + math.log(1 - posterior[i])
-            cost += y[i] * math.log(posterior[i] / (1 - posterior[i])) + math.log(1 - posterior[i])
-
+            cost += y[i] * math.log(posterior[i] / (1.0 - posterior[i])) + math.log(1.0 - posterior[i])
 
         return cost + regularizationTerm
 
@@ -74,7 +77,6 @@ class LOGREG(object):
 
         for i in range(0, len(y)):
             firstDerivative += (y[i] - sigmoid[i])*X[:, i]
-            #firstDerivative += X[:, i]
 
         return firstDerivative + regularizationTerm
 
@@ -93,9 +95,16 @@ class LOGREG(object):
 
         sigma = self.activationFunction(np.matrix(w), X)
 
-        for i in range(0, n):
-            hessian += np.matrix(X[:, i]).T@np.matrix(X[:, i])*sigma[i]*(1 - sigma[i])
-            assert sigma[i] * (1 - sigma[i]) >= 0
+        S = np.zeros((len(sigma), len(sigma)))
+
+        for i in range(0, len(sigma)):
+            S[i, i] = sigma[i]
+
+        hessian = np.matrix(X)@np.matrix(S)@np.matrix(X).T
+        #
+        # for i in range(0, n):
+        #     hessian += np.matrix(X[:, i]).T@np.matrix(X[:, i])*sigma[i]*(1 - sigma[i])
+        #     assert sigma[i] * (1 - sigma[i]) >= 0
 
         return - hessian + regularizationTerm
 
@@ -118,12 +127,11 @@ class LOGREG(object):
             oldposteriorloglikelihood = posteriorloglikelihood
             w_old = w
             h = self._calculateHessian(w, X)
-            #sigma = self.activationFunction(w_old, X)
 
+            #print(np.linalg.eig(h)[0])
             w = w_old - np.linalg.inv(h)@np.matrix(self._calculateDerivative(w_old, X, y)).T
-            #print(w_old.shape)
-            #print(w.shape)
             w_update = w - w_old
+            assert(w.shape == w_old.shape)
             posteriorloglikelihood = self._costFunction(w, X, y)
             if self.r == 0:
                 # TODO: What happens if this condition is removed?
@@ -181,12 +189,12 @@ class LOGREG(object):
 
         predictions = self.classify(X)
 
-        numOfMissclassified = 0.0
+        numOfMissclassified = 0
 
         for i in range(0, numberOfSamples):
             if predictions[i] != y[i]:
                 numOfMissclassified += 1
 
-        totalError = numOfMissclassified / numberOfSamples
+        totalError = numOfMissclassified / numberOfSamples * 100
 
         print("{}/{} misclassified. Total error: {:.2f}%.".format(numOfMissclassified, numberOfSamples, totalError))
