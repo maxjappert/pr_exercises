@@ -18,8 +18,11 @@ class LOGREG(object):
 
         exponents = -(w.T@X)
 
+        # formula for the activation function
         result = 1.0 / (1.0 + np.exp(exponents))
 
+        # we squeeze the np matrix of values computed by the activation function into an array,
+        # since we only need a 1D-array of values
         return np.squeeze(np.asarray(result))
 
     def _costFunction(self, w: np.ndarray, X: np.ndarray, y: np.ndarray) -> float:
@@ -36,16 +39,20 @@ class LOGREG(object):
 
         cost = 0
 
-
         for i in range(0, len(y)):
+            # we use these conditions in order to avoid a math domain error in the case of posterior[i] == 1
             if posterior[i] < self._eps:
                 posterior[i] = self._eps
             elif posterior[i] == 1:
                 posterior[i] -= self._eps
 
-            cost += y[i] * math.log(posterior[i] / (1.0 - posterior[i])) + math.log(1.0 - posterior[i]) - self.r * np.linalg.norm(w[1:], 2)
+            # formula from the slides
+            cost += y[i] * np.log(posterior[i] / (1.0 - posterior[i])) + np.log(1.0 - posterior[i])
 
-        return cost
+        # also from the slides, whereby r == 1/2*\sigma
+        regularizationTerm = self.r * np.linalg.norm(w[1:], 2)**2
+
+        return cost - regularizationTerm
 
     def _calculateDerivative(self, w: np.ndarray, X: np.ndarray, y: np.ndarray) -> np.ndarray:
         '''
@@ -59,14 +66,18 @@ class LOGREG(object):
 
         sigmoid = self.activationFunction(w, X)
 
+        # formula from the slides
         firstDerivative = np.zeros(X.shape[0])
         firstDerivative += np.sum((y-sigmoid)*X, axis=1)
 
+        # also from the slides, how to compute the derivative of the regularization term
         regVec = 2 * self.r * w.T
 
-        regVec[0] = 0
+        # we need an array, not a matrix!
+        regularizationTerm = np.squeeze(np.asarray(regVec))
 
-        firstDerivative -= np.squeeze(np.asarray(regVec))
+        # to avoid regularizing w_0
+        regularizationTerm[0] = 0
 
         return firstDerivative
 
@@ -80,21 +91,23 @@ class LOGREG(object):
 
         d, n = X.shape
 
-        regMatrix = np.zeros((d, d))
-
-        for i in range(1, d):
-            regMatrix[i, i] = self.r
+        # Regularization matrix => matrix with the regularization term on the diagonal
+        regMatrix = 2 * self.r * np.identity(d)
+        # we don't want to regularize w_0
+        regMatrix[0, 0] = 0
 
         sigma = self.activationFunction(np.matrix(w), X)
 
-        S = np.zeros((len(sigma), len(sigma)))
+        S = np.zeros((n, n))
 
+        # following the informal definition on the slides
         for i in range(0, len(sigma)):
             S[i, i] = sigma[i]
 
+        # thanks viktor ;)
         hessian = np.matrix(X)@np.matrix(S)@np.matrix(X).T
 
-        return - hessian + regMatrix
+        return - hessian - regMatrix
 
     def _optimizeNewtonRaphson(self, X: np.ndarray, y: np.ndarray, number_of_iterations: int) -> np.ndarray:
         '''
@@ -112,26 +125,21 @@ class LOGREG(object):
               np.exp(posteriorloglikelihood))
 
         for i in range(number_of_iterations):
-            oldposteriorloglikelihood = posteriorloglikelihood
             w_old = w
             h = self._calculateHessian(w, X)
-
-            #print(np.linalg.eig(h)[0])
+            # formula from the slides
             w = w_old - np.linalg.inv(h)@np.matrix(self._calculateDerivative(w_old, X, y)).T
             w_update = w - w_old
-            assert(w.shape == w_old.shape)
             posteriorloglikelihood = self._costFunction(w, X, y)
             if self.r == 0:
-                # TODO: What happens if this condition is removed?
                 if np.exp(posteriorloglikelihood) > 1 - self._eps:
-                    print('posterior > 1-eps, breaking optimization at niter = ', i)
+                    print('posterior > 1-eps, breaking optimization at iter = ', i)
                     break
 
             # TODO: Implement convergence check based on when w_update is close to zero
             # Note: You can make use of the class threshold value self._threshold
-
             for j in range(0, len(w)):
-                if abs(w_update[j]) < self._eps:
+                if abs(w_update[j]) < self._threshold:
                     break
 
         print('final posteriorloglikelihood', posteriorloglikelihood, 'final likelihood',
@@ -159,10 +167,12 @@ class LOGREG(object):
         # TODO: Implement classification function for each entry in the data matrix
         numberOfSamples = X.shape[1]
 
+        sigmoid = self.activationFunction(self.w, X)
         predictions = np.zeros(numberOfSamples)
 
         for i in range(0, numberOfSamples):
-            predictions[i] = 0 if np.matrix(self.w).T@X[:, i] + self.w[0] < 0 else 1
+            # see theory answers for detailed explanation
+            predictions[i] = 0 if sigmoid[i] < 0.5 else 1
 
         return predictions
 
