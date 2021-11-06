@@ -68,6 +68,7 @@ class LOGREG(object):
 
         # formula from the slides
         firstDerivative = np.zeros(X.shape[0])
+        # firstDerivative = np.matmul(y - self.activationFunction(w, X), X.T)
         firstDerivative += np.sum((y-sigmoid)*X, axis=1)
 
         # also from the slides, how to compute the derivative of the regularization term
