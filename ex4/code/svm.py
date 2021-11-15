@@ -35,10 +35,11 @@ class SVM(object):
 
         # We have no idea what we're doing...
 
-        K = np.zeros((x.shape[0], x.shape[1]))
+        # the matrix needs to be n x n
+        K = np.zeros((x.shape[1], x.shape[1]))
 
         if kernelFunction == "linear":
-            for i in range(0, x.shape[0]):
+            for i in range(0, x.shape[1]):
                 for j in range(0, x.shape[1]):
                     K[i, j] = self.__linearKernel__(x[:, i], x[:, j], pars)
         elif kernelFunction == "poly":
@@ -80,15 +81,17 @@ class SVM(object):
         else:
             print('Fitting linear SVM')
             # TODO: Compute the kernel matrix for the linear SVM
-            K = np.zeros((NUM, NUM))
+            #K = np.zeros((NUM, NUM))
+            K = self.__computeKernelMatrix__(x, "linear", kernelpar)
+            self.kernel = self.__linearKernel__
 
-            for i in range(0, NUM):
-                for j in range(0, NUM):
-                    K[i, j] = y[0, i] * y[0, j] * (np.matrix(x[:, i])@np.transpose(np.matrix(x[:, j])))
+            # for i in range(0, NUM):
+            #     for j in range(0, NUM):
+            #         K[i, j] = y[0, i] * y[0, j] * (np.matrix(x[:, i])@np.transpose(np.matrix(x[:, j])))
 
         # This probably doesn't work tbh
         if self.C is None:
-            G = np.eye(NUM)
+            G = -np.eye(NUM)
             h = np.zeros((NUM, 1))
         else:
             print("Using Slack variables")
@@ -115,28 +118,38 @@ class SVM(object):
         self.sv_labels = np.zeros(len(indices))
 
         i = 0
-        print(np.array(solution['x']))
         for index in indices:
             self.lambdas[:, i] = np.array(solution['x'])[index]
             self.sv[:, i] = x[:, index]
-            self.sv_labels[i] = y[index]
+            self.sv_labels[i] = y[0, index]
             i += 1
-            print("iterations")
 
         if kernel is None:
             self.w = np.zeros(x.shape[0]) # SVM weights used in the linear SVM
+            checksum = 0
 
             for j in range(0, x.shape[1]):
                 self.w += np.array(solution['x'])[j] * x[:, j] * y[0, j]
+                checksum += np.array(solution['x'][j]) * y[0, j]
+
+
+            # slide 25
+            assert np.abs(checksum <= self.__TOL)
 
             # Use the mean of all support vectors for stability when computing the bias (w_0)
             self.bias = 0 # Bias
+
+            for index in indices:
+                self.bias += (y[0, index] - np.matrix(x[:, index])@np.matrix(self.w).T)[0, 0]
+
+            self.bias = 0
+
         else:
             print("aware that a kernel is active?")
             self.w = None
             # Use the mean of all support vectors for stability when computing the bias (w_0).
             # In the kernel case, remember to compute the inner product with the chosen kernel function.
-            self.bias = None # Bias
+            self.bias = 0
 
         # TODO: Implement the KKT check
         self.__check__()
@@ -167,7 +180,7 @@ class SVM(object):
             a = np.matrix(self.w)
             b = np.transpose(np.matrix(x[:, i]))
             c = a@b
-            classificationFuncion[i] = c[0, 0]# + self.bias
+            classificationFuncion[i] = c[0, 0] + self.bias
 
         return np.where(classificationFuncion < 0, -1, 1)
 
@@ -185,9 +198,22 @@ class SVM(object):
 
         y_list = np.squeeze(np.asarray(y))
 
-        print(len(y_list))
-
         result = np.sum(np.where(classifiedLabels == y_list, 0, 1)) / len(y_list)
+        #
+        # total_error = 0
+        #
+        # # todo: highly inefficient
+        # for i in range(0, len(y_list)):
+        #     if y_list[i] != classifiedLabels[i]:
+        #         total_error += 1
+        #
+        #     print("classified: ", classifiedLabels[i])
+        #     print("ground truth: ", y_list[i])
+        #     print("\n")
+        #
+        # result = total_error / len(y_list)
+
+        #print("Abs error: ", total_error)
 
         print("Total error: {:.2f}%".format(result))
 
