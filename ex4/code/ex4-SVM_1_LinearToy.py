@@ -30,23 +30,26 @@ def svmLinearToyExample() -> None:
     toy_test_label = np.transpose(toy_test[0, :].astype(np.double)[:, None])
     toy_test_x = toy_test[1:3, :].astype(np.double)
 
-    svm = SVM(C)
-    svm.train(toy_train_x, toy_train_label)
+    c_values = [1, 10, 100, 1000, None]
 
-    print("Training error")
-    svm.printLinearClassificationError(toy_train_x, toy_train_label)
+    for c in c_values:
+        svm = SVM(c)
+        svm.train(toy_train_x, toy_train_label)
 
-    print("Test error")
-    svm.printLinearClassificationError(toy_test_x, toy_test_label)
+        print("Training error")
+        svm.printLinearClassificationError(toy_train_x, toy_train_label)
 
-    print("Visualizing data")
-    datamin = math.floor(min(np.min(toy_train_x), np.min(np.max(toy_test_x))))
-    datamax = math.ceil(max(np.max(toy_train_x), np.max(np.max(toy_test_x))))
+        print("Test error")
+        svm.printLinearClassificationError(toy_test_x, toy_test_label)
 
-    plot_linear_separator(plt, svm, datamin, datamax)
-    plot_data(plt, toy_train_x, toy_train_label, [['red', '+'], ['blue', '_']], 'Training')
-    plot_data(plt, toy_test_x, toy_test_label, [['yellow', '+'], ['green', '_']], 'Test')
-    plt.show()
+        print("Visualizing data")
+        datamin = math.floor(min(np.min(toy_train_x), np.min(np.max(toy_test_x))))
+        datamax = math.ceil(max(np.max(toy_train_x), np.max(np.max(toy_test_x))))
+
+        plot_linear_separator(plt, svm, datamin, datamax)
+        plot_data(plt, toy_train_x, toy_train_label, [['red', '+'], ['blue', '_']], 'Training')
+        plot_data(plt, toy_test_x, toy_test_label, [['yellow', '+'], ['green', '_']], 'Test')
+        plt.show()
 
 
 if __name__ == "__main__":
