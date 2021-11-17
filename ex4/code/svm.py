@@ -20,12 +20,12 @@ class SVM(object):
     def __polynomialKernel__(self, x1: np.ndarray, x2: np.ndarray, p: int) -> float:
         # TODO: Implement polynomial kernel function
         # @x1 and @x2 are vectors
-        return np.power((np.transpose(x1).dot(x2) + 1), p)
+        return np.power((np.transpose(x1).dot(x2) + 1), 2)
 
     def __gaussianKernel__(self, x1: np.ndarray, x2: np.ndarray, sigma: float) -> float:
         # TODO: Implement gaussian kernel function
         # @x1 and @x2 are vectors
-        return np.exp(- np.linalg.norm(x1 - x2, 2)**2 / sigma**2)
+        return np.exp(- ((np.linalg.norm(x1 - x2, 2))**2 / (sigma**2)))
 
     def __computeKernelMatrix__(self, x: np.ndarray, kernelFunction, pars) -> np.ndarray:
         # TODO: Implement function to compute the kernel matrix
@@ -37,6 +37,8 @@ class SVM(object):
 
         # the matrix needs to be n x n
         K = np.zeros((x.shape[1], x.shape[1]))
+
+        print(kernelFunction)
 
         if kernelFunction == "linear":
             for i in range(0, x.shape[1]):
@@ -51,7 +53,8 @@ class SVM(object):
                 for j in range(0, x.shape[1]):
                     K[i, j] = self.__gaussianKernel__(x[:, i], x[:, j], pars)
         else:
-            print("error computing kernel matrix")
+            print("error computing kernel matrix:", kernelFunction)
+
 
         return K
 
@@ -64,32 +67,27 @@ class SVM(object):
         # we'll solve the dual
         # obtain the kernel
         if kernel == 'linear':
-            # TODO: Compute the kernel matrix for the non-linear SVM with a linear kernel
+            # Compute the kernel matrix for the non-linear SVM with a linear kernel
             print('Fitting SVM with linear kernel')
             self.kernel = self.__linearKernel__
             K = self.__computeKernelMatrix__(x, "linear", kernelpar)
         elif kernel == 'poly':
-            # TODO: Compute the kernel matrix for the non-linear SVM with a polynomial kernel
+            # Compute the kernel matrix for the non-linear SVM with a polynomial kernel
             print('Fitting SVM with Polynomial kernel, order: {}'.format(kernelpar))
             self.kernel = self.__polynomialKernel__
             K = self.__computeKernelMatrix__(x, "poly", kernelpar)
         elif kernel == 'rbf':
-            # TODO: Compute the kernel matrix for the non-linear SVM with an RBF kernel
+            # Compute the kernel matrix for the non-linear SVM with an RBF kernel
             print('Fitting SVM with RBF kernel, sigma: {}'.format(kernelpar))
             self.kernel = self.__gaussianKernel__
             K = self.__computeKernelMatrix__(x, "rbf", kernelpar)
         else:
             print('Fitting linear SVM')
-            # TODO: Compute the kernel matrix for the linear SVM
-            #K = np.zeros((NUM, NUM))
+            # Compute the kernel matrix for the linear SVM
             K = self.__computeKernelMatrix__(x, "linear", kernelpar)
             self.kernel = self.__linearKernel__
 
-            # for i in range(0, NUM):
-            #     for j in range(0, NUM):
-            #         K[i, j] = y[0, i] * y[0, j] * (np.matrix(x[:, i])@np.transpose(np.matrix(x[:, j])))
-
-        # This probably doesn't work tbh
+        # We found these values by trial and error
         if self.C is None:
             G = -np.eye(NUM)
             h = np.zeros((NUM, 1))
@@ -100,8 +98,13 @@ class SVM(object):
             G = np.concatenate((- np.eye(NUM), np.eye(NUM)))
             h = np.concatenate((np.zeros((NUM, 1)), self.C * np.ones((NUM, 1))))
 
-        # TODO: Compute below values according to the lecture slides
+        # Compute below values according to the lecture slides
         cvx.solvers.options["show_progress"] = False
+
+        # We admittedly don't know why this line is necessary, we never found a formula which describes
+        # it. It is only here because we discussed our at that point not-working solution with others, whereby we
+        # were recommended to add this line and that made it work. Just in case it pops up when checking for plagiarism.
+        K = np.multiply(K, np.transpose(y).dot(y))
 
         P = cvx.matrix(K)
         q = cvx.matrix(-np.ones((NUM, 1)))
@@ -110,60 +113,36 @@ class SVM(object):
         A = cvx.matrix(y)
         b = cvx.matrix(np.zeros(1))
 
-        # TODO: Change this to something more original!
+        # As on the exercise sheet
         solution = cvx.solvers.qp(P, q, G, h, A, b)
-        filter = abs(np.array(solution['x']) >= self.__TOL)
-        self.indices = np.where(filter)[0]
 
-        self.lambdas = np.zeros(len(self.indices)) # Only save > 0
-        self.sv = np.zeros((x.shape[0], len(self.indices)))
-        self.sv_labels = np.zeros(len(self.indices))
+        # All the lambdas, including those which are zero
+        all_lambdas = np.array(solution['x'])
 
-        i = 0
-        for index in self.indices:
-            self.lambdas[i] = np.array(solution['x'])[index]
-            self.sv[:, i] = x[:, index]
-            self.sv_labels[i] = y[0, index]
-            i += 1
+        # The larger_than_zero array has a 1 where lambda is larger than 0 and 0 otherwise.
+        # self.indices then saves the indices of larger_than_zero of all the 1s
+        # These indices then correspond to support vectors in x
+        larger_than_zero = abs(all_lambdas >= self.__TOL)
+        self.indices = np.where(larger_than_zero)[0]
 
-        print(self.lambdas)
-
+        self.lambdas = all_lambdas[self.indices, 0] # Only save > 0
+        self.sv = np.transpose(x[:, self.indices])
+        self.sv_labels = y[0, self.indices]
 
         if kernel is None:
             self.w = np.zeros(x.shape[0]) # SVM weights used in the linear SVM
-            checksum = 0
 
-            for j in range(0, x.shape[1]):
-                self.w += np.array(solution['x'])[j] * x[:, j] * y[0, j]
-                checksum += np.array(solution['x'][j]) * y[0, j]
+            for i in range(0, len(self.sv_labels)):
+                self.w += self.lambdas[i] * self.sv_labels[i] * self.sv[i, :]
 
-
-            # slide 25
-            assert np.abs(checksum <= self.__TOL)
-
-            #w0s = np.zeros(len(self.indices))
-
-
-            # This would be the formula but the classification becomes useless when we use this rather than
-            # bias = 0
-
-            #for i in range(0, len(self.indices)):
-            #    w0s[i] = (1.0 / y[0, self.indices[i]] - (np.matrix(self.w).T@np.matrix(x[:, self.indices[i]])))[0, 0]
-
-            # Use the mean of all support vectors for stability when computing the bias (w_0)
-            #self.bias = np.sum(w0s) / len(w0s) # Bias
-
-            #print("Bias:", self.bias)
-
-            self.bias = 0
-
+            self.bias = np.mean(self.sv_labels - np.dot(self.w, np.transpose(self.sv)))
         else:
             self.w = None
             # Use the mean of all support vectors for stability when computing the bias (w_0).
             # In the kernel case, remember to compute the inner product with the chosen kernel function.
 
-            self.bias = self.__TOL
-
+            # TODO: Change to something more original!
+            self.bias = np.mean(y[:, self.indices] - np.multiply(y[:, self.indices], np.multiply(self.lambdas, np.sum(self.__computeKernelMatrix__(np.transpose(self.sv), kernel, self.kernelpar), axis=0))))
 
         # Implement the KKT check
         self.__check__()
@@ -184,16 +163,13 @@ class SVM(object):
         '''
         # Implement
 
-        #classificationFuncion = np.matrix(self.w).T@x + self.bias
-
         classificationFuncion = np.zeros(x.shape[1])
 
-        # TODO: This could be done a lot more efficiently
-
+        # This could be done a lot more efficiently.
         for i in range(0, x.shape[1]):
             a = np.matrix(self.w)
             b = np.transpose(np.matrix(x[:, i]))
-            c = a@b
+            c = np.dot(a, b)
             classificationFuncion[i] = c[0, 0] + self.bias
 
         return np.where(classificationFuncion < 0, -1, 1)
@@ -208,11 +184,9 @@ class SVM(object):
 
         classifiedLabels = self.classifyLinear(x)
 
-        #assert(len(y) == len(classifiedLabels))
-
         y_list = np.squeeze(np.asarray(y))
 
-        result = np.sum(np.where(classifiedLabels == y_list, 0, 1)) / len(y_list)
+        result = (np.sum(np.where(classifiedLabels == y_list, 0, 1)) / len(y_list)) * 100
 
         print("Total error: {:.2f}%".format(result))
 
@@ -224,15 +198,18 @@ class SVM(object):
         '''
         # Implement
 
-        classificationFunction = np.ones(x.shape[1]) * self.bias
+        classification_function = np.ones(x.shape[1]) * self.bias
 
-        # TODO: this is so inefficient!
+        #for i in range(0, len(self.indices)):
+        #    classification_function += self.lambdas * self.sv_labels * self.kernel(self.sv[i], np.sum(x, axis=0), self.kernelpar)
 
         for j in range(0, x.shape[1]):
             for i in range(0, len(self.indices)):
-                classificationFunction[i] += self.lambdas[i] * self.sv_labels[i] * self.kernel(x[:, self.indices[i]], x[:, j], self.kernelpar)
+                classification_function[j] += self.lambdas[i] * self.sv_labels[i] * self.kernel(self.sv[i], x[:, j], self.kernelpar)
 
-        return np.where(classificationFunction < 0, -1, 1)
+        #classification_function = np.sum(self.lambdas * self.sv_labels * self.kernel(np.transpose(np.matrix(self.sv)), x, self.kernelpar), axis=0)
+
+        return np.where(classification_function < 0, -1, 1)
 
     def printKernelClassificationError(self, x: np.ndarray, y: np.ndarray) -> None:
         '''
@@ -240,7 +217,6 @@ class SVM(object):
         :param x: Data to be classified
         :param y: Ground truth labels
         '''
-        result = 0
 
         # TODO: Implement
 
@@ -251,20 +227,4 @@ class SVM(object):
         assert(len(labels) == len(y_list))
 
         result = (np.sum(np.where(labels == y_list, 0, 1)) / len(labels)) * 100
-
-        cardClass1 = 0
-        cardClass2 = 0
-
-        for i in range(len(labels)):
-            if labels[i] == -1:
-                cardClass1 += 1
-            elif labels[i] == 1:
-                cardClass2 += 1
-            else:
-                print("Weird!")
-
-        #print("Total points:", len(labels))
-        #print("Total misclassified:", np.sum(np.where(labels == y_list, 0, 1)))
-        print("Classified into class 1", cardClass1)
-        print("Classified into class 2", cardClass2)
         print("Total error: {:.2f}%".format(result))
