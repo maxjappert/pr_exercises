@@ -22,7 +22,7 @@ def testMNIST38() -> None:
     # C: float
     # Kernels: 'linear', 'poly', 'rbf'
     # Kernelpar: float
-    svm_image(train, test, is_cifar=False, linear=False, C=10, kernel='rbf', kernelpar=0.5)
+    svm_image(train, test, is_cifar=False, linear=False, C=10, kernel='poly', kernelpar=0.2)
 
 
 if __name__ == "__main__":

@@ -1,3 +1,5 @@
+import timeit
+
 import matplotlib
 import sys
 import time
@@ -29,9 +31,25 @@ def svmSpeedComparison() -> None:
 
     toy_test_x = toy_test[1:3, :].astype(np.double)
 
+
+    # we measure the difference between the start- and end-times in seconds
+    linear_starttime = time.time()
+    for _ in range(0, 1000):
+        linear_svm = SVM(None)
+        linear_svm.train(toy_train_x, toy_train_label, None, None)
+        linear_svm.classifyLinear(toy_test_x)
+    linear_endtime = time.time()
+
+    kernel_starttime = time.time()
+    for _ in range(0, 1000):
+        kernel_svm = SVM(None)
+        kernel_svm.train(toy_train_x, toy_train_label, "linear", None)
+        kernel_svm.classifyKernel(toy_test_x)
+    kernel_endtime = time.time()
+
     # TODO: Compute the average classification time of both the linear and the kernel SVM (with a linear kernel)
-    result_linear = ???
-    result_kernel = ???
+    result_linear = float(linear_endtime - linear_starttime) / 1000
+    result_kernel = float(kernel_endtime - kernel_starttime) / 1000
 
     print('Linear SVM timing: \n {:.10f} over {} runs'.format(result_linear, numOfRuns))
     print('SVM with linear kernel timing: \n {:.10f} over {} runs'.format(result_kernel, numOfRuns))

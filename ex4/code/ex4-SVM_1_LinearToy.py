@@ -30,10 +30,7 @@ def svmLinearToyExample() -> None:
     toy_test_label = np.transpose(toy_test[0, :].astype(np.double)[:, None])
     toy_test_x = toy_test[1:3, :].astype(np.double)
 
-    c_values = [1, 10, 100, 1000, None]
-
-    #for c in c_values:
-    svm = SVM(C)
+    svm = SVM(10)
     svm.train(toy_train_x, toy_train_label)
 
     print("Training error")

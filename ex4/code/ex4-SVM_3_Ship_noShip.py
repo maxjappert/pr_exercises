@@ -22,7 +22,7 @@ def test_ship() -> None:
     # C: float
     # Kernels: 'linear', 'poly', 'rbf'
     # Kernelpar: float
-    svm_image(train, test, is_cifar=True, linear=False, C=10, kernel='rbf', kernelpar=0.5)
+    svm_image(train, test, is_cifar=True, linear=False, C=1, kernel='linear', kernelpar=0.5)
 
 
 if __name__ == "__main__":

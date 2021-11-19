@@ -37,12 +37,9 @@ def svmKernelToyExample() -> None:
 
     print("Train kernel svm")
     C = None
-    svm = SVM(C)
+    svm = SVM(None)
     # TODO: Try out different kernels and kernel parameter values
-
-    kernel_list = ['rbf']
-
-    #for kernel in kernel_list:
+    # kernelpar=0.3 is ideal
     svm.train(train_x, train_label, kernel="rbf", kernelpar=0.5)
     print("Training error")
     svm.printKernelClassificationError(train_x, train_label)
