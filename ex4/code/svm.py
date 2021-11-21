@@ -13,22 +13,22 @@ class SVM(object):
         self.__TOL = 1e-5
 
     def __linearKernel__(self, x1: np.ndarray, x2: np.ndarray, _) -> float:
-        # TODO: Implement linear kernel function
+        # Implement linear kernel function
         # @x1 and @x2 are vectors
         return np.transpose(x1).dot(x2)
 
     def __polynomialKernel__(self, x1: np.ndarray, x2: np.ndarray, p: int) -> float:
-        # TODO: Implement polynomial kernel function
+        # Implement polynomial kernel function
         # @x1 and @x2 are vectors
         return np.power((np.transpose(x1).dot(x2) + 1), 2)
 
     def __gaussianKernel__(self, x1: np.ndarray, x2: np.ndarray, sigma: float) -> float:
-        # TODO: Implement gaussian kernel function
+        # Implement gaussian kernel function
         # @x1 and @x2 are vectors
         return np.exp(- ((np.linalg.norm(x1 - x2, 2))**2 / (sigma**2)))
 
     def __computeKernelMatrix__(self, x: np.ndarray, kernelFunction, pars) -> np.ndarray:
-        # TODO: Implement function to compute the kernel matrix
+        # Implement function to compute the kernel matrix
         # @x is the data matrix
         # @kernelFunction - pass a kernel function (gauss, poly, linear) to this input
         # @pars - pass the possible kernel function parameter to this input
@@ -57,7 +57,7 @@ class SVM(object):
         return K
 
     def train(self, x: np.ndarray, y: np.ndarray, kernel=None, kernelpar=2) -> None:
-        # TODO: Implement the remainder of the svm training function
+        # Implement the remainder of the svm training function
         self.kernelpar = kernelpar
 
         NUM = x.shape[1]
@@ -101,7 +101,7 @@ class SVM(object):
 
         # We admittedly don't know why this line is necessary, we never found a formula which describes
         # it. It is only here because we discussed our at that point not-working solution with others, whereby we
-        # were recommended to add this line and that made it work. Just in case it pops up when checking for plagiarism.
+        # were recommended to add this line and that made it work.
         K = np.multiply(K, np.transpose(y).dot(y))
 
         P = cvx.matrix(K)
@@ -202,14 +202,9 @@ class SVM(object):
 
         classification_function = np.ones(x.shape[1]) * self.bias
 
-        #for i in range(0, len(self.indices)):
-        #    classification_function += self.lambdas * self.sv_labels * self.kernel(self.sv[i], np.sum(x, axis=0), self.kernelpar)
-
         for j in range(0, x.shape[1]):
             for i in range(0, len(self.indices)):
                 classification_function[j] += self.lambdas[i] * self.sv_labels[i] * self.kernel(self.sv[i], x[:, j], self.kernelpar)
-
-        #classification_function = np.sum(self.lambdas * self.sv_labels * self.kernel(np.transpose(np.matrix(self.sv)), x, self.kernelpar), axis=0)
 
         return np.where(classification_function < 0, -1, 1)
 
@@ -220,7 +215,7 @@ class SVM(object):
         :param y: Ground truth labels
         '''
 
-        # TODO: Implement
+        # Implement
 
         labels = self.classifyKernel(x)
 
