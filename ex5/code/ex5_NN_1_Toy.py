@@ -22,6 +22,25 @@ def toyNetwork() -> None:
     # 3 - update weight variables according to gradient and learning rate
     # 4 - Zero weight gradients with w_.grad_zero_()
 
+    # define the network structure (2 input nodes, 2 hidden layer nodes and 1 output node)
+    n_input, n_hidden, n_output = 2, 2, 1
+
+    # weights
+    w1 = torch.tensor([0.7, 1.3, 1.5, 0.1], requires_grad=True)
+    w2 = torch.tensor([0.7, 0.8], requires_grad=True)
+
+    X = torch.tensor(([1, 1]), dtype=torch.float)
+    Y = torch.tensor(([1]), dtype=torch.float)
+
+    learning_rate = 0.2
+
+    def forward(x):
+        h = torch.matmul(x, w1)
+        h_out = sigmoid(h)
+        y_hat = torch.matmul(h_out, w2)  # do not have to squash it, because linear function for output
+
+    def sigmoid(s):
+        return 1 / (1 + torch.exp(-s))
 
 
 if __name__ == "__main__":
