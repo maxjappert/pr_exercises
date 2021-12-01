@@ -25,22 +25,50 @@ def toyNetwork() -> None:
     # define the network structure (2 input nodes, 2 hidden layer nodes and 1 output node)
     n_input, n_hidden, n_output = 2, 2, 1
 
-    # weights
-    w1 = torch.tensor([0.7, 1.3, 1.5, 0.1], requires_grad=True)
+    x = torch.tensor([1.0, 1.0], requires_grad=True)
+    y = torch.tensor(1.0, requires_grad=True)
+
+    b1 = torch.tensor(1.0, requires_grad=True)
+    b2 = torch.tensor(1.0, requires_grad=True)
+
+    w = torch.tensor([[0.7, 1.5],
+                      [1.3, 0.1]], requires_grad=True)
+
     w2 = torch.tensor([0.7, 0.8], requires_grad=True)
 
-    X = torch.tensor(([1, 1]), dtype=torch.float)
-    Y = torch.tensor(([1]), dtype=torch.float)
+    wb = torch.tensor([0.0, 0.0, 0.0], requires_grad=True)
 
-    learning_rate = 0.2
+    for i in range(0, 50):
+        bias = torch.tensor([wb[0], wb[1]])
 
-    def forward(x):
-        h = torch.matmul(x, w1)
-        h_out = sigmoid(h)
-        y_hat = torch.matmul(h_out, w2)  # do not have to squash it, because linear function for output
+        h = sigmoid(w @ x + bias)
 
-    def sigmoid(s):
-        return 1 / (1 + torch.exp(-s))
+        y_hat = torch.sum(h * w2) + wb[2]
+
+        error = 0.5 * torch.pow(y - y_hat, 2)
+
+        error.backward()  # Compute the Gradients for w and b (requires_grad=True)
+
+        lr = 0.2
+
+        with torch.no_grad():  # Temporarily set all requires_grad=False
+            w -= lr * w.grad
+            w2 -= lr * w2.grad
+            wb -= lr * wb.grad
+            #b -= lr * b.grad
+            # Remember to zero the gradients!
+            # If not, the gradients will be accumulated
+            w.grad.zero_()
+            w2.grad.zero_()
+            wb.grad.zero_()
+            #b.grad.zero_()
+
+        print("Error: {:.4f}".format(error))
+
+
+
+def sigmoid(s):
+    return 1 / (1 + torch.exp(-s))
 
 
 if __name__ == "__main__":
