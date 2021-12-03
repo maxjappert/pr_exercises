@@ -13,7 +13,7 @@ if __name__ == '__main__':
     print('Testing Logistic Regression')
     logRegModel = MyLogRegNN()
 
-    criterion = None  # Cost function - torch.nn.XXX loss functions
+    criterion = torch.nn.BCELoss()  # Cost function - torch.nn.XXX loss functions
     optimizer = None  # Optimizer algorithm - torch.optim.XXX function
     # TODO: Your might also want to change the batchSize and number of epochs depending on your optimizer configuration
     finallogRegmodel, logRegHistory = train_and_validate(logRegModel, device, criterion, optimizer, epochs=100, batchSize=512)

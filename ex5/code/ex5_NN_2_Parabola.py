@@ -15,13 +15,12 @@ def parabolaData() -> None:
     nTrainSamples = X_train.shape[0]
     print("Total number of training examples: {}".format(nTrainSamples))
 
-
     # TODO: Define model, optimizer and loss
-    batch_size = ???          # Define training batch size
+    batch_size = 4          # Define training batch size
     model = mySimpleNN()   # Initialize the 'mySimpleNN' instance
-    optimizer = ???           # Define optimizer to use from torch.optim.xxx
-    criterion = ???           # Define model cost function torch.nn.xxx
-    epocs = ???               # Total number of epocs to execute
+    optimizer = torch.optim.Adadelta(model.parameters(), lr=0.3)          # Define optimizer to use from torch.optim.xxx
+    criterion = torch.nn.BCELoss()           # Define model cost function torch.nn.xxx
+    epocs = 200               # Total number of epocs to execute
 
     trainer = Trainer(model, optimizer, criterion)
     trainer.trainModel(X_train, y_train, X_test, y_test,
@@ -44,11 +43,11 @@ def flowerData() -> None:
 
 
     # TODO: Define model, optimizer and loss
-    batch_size = ???          # Define training batch size
+    batch_size = 8        # Define training batch size
     model = mySimpleNN()   # Initialize the 'mySimpleNN' instance
-    optimizer = ???           # Define optimizer to user from torch.optim.xxx
-    criterion = ???           # Define model cost function torch.nn.xxx
-    epocs = ???               # Total number of epocs to execute
+    optimizer = torch.optim.SGD(model.parameters(), lr=0.2)           # Define optimizer to user from torch.optim.xxx
+    criterion = torch.nn.BCELoss           # Define model cost function torch.nn.xxx
+    epocs = 200               # Total number of epocs to execute
 
     trainer = Trainer(model, optimizer, criterion)
     trainer.trainModel(X_train, y_train, X_test, y_test,

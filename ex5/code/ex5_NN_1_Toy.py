@@ -3,18 +3,18 @@ import torch
 
 
 def toyNetwork() -> None:
-    # TODO: Implement network as given in the exercise sheet.
+    # Implement network as given in the exercise sheet.
     # Manual implementation functionality when computing loss, gradients and optimization
     # i.e. do not use torch.optim or any of the torch.nn functionality
     # Torch documentation: https://pytorch.org/docs/stable/index.html
 
-    # TODO: Define weight variables using: torch.tensor([], requires_grad=True)
-    # TODO: Define data: x, y using torch.tensor
-    # TODO: Define learning rate
+    # Define weight variables using: torch.tensor([], requires_grad=True)
+    # Define data: x, y using torch.tensor
+    # Define learning rate
 
-    # TODO: Train network until convergence
-    # TODO: Define network forward pass connectivity
-    # TODO: Get gradients of weights and manually update the network weights
+    # Train network until convergence
+    # Define network forward pass connectivity
+    # Get gradients of weights and manually update the network weights
 
     # Steps:
     # 1 - compute error
@@ -25,11 +25,9 @@ def toyNetwork() -> None:
     # define the network structure (2 input nodes, 2 hidden layer nodes and 1 output node)
     n_input, n_hidden, n_output = 2, 2, 1
 
+    # we define the tensors
     x = torch.tensor([1.0, 1.0], requires_grad=True)
     y = torch.tensor(1.0, requires_grad=True)
-
-    b1 = torch.tensor(1.0, requires_grad=True)
-    b2 = torch.tensor(1.0, requires_grad=True)
 
     w = torch.tensor([[0.7, 1.5],
                       [1.3, 0.1]], requires_grad=True)
@@ -38,7 +36,8 @@ def toyNetwork() -> None:
 
     wb = torch.tensor([0.0, 0.0, 0.0], requires_grad=True)
 
-    for i in range(0, 50):
+    for i in range(0, 10):
+        # since the bias is always b = 1, it corresponds to its weight, since w = 1 * w
         bias = torch.tensor([wb[0], wb[1]])
 
         h = sigmoid(w @ x + bias)
@@ -49,27 +48,23 @@ def toyNetwork() -> None:
 
         error.backward()  # Compute the Gradients for w and b (requires_grad=True)
 
-        lr = 0.2
+        lr = 1
 
+        # from the deep learning notebook
         with torch.no_grad():  # Temporarily set all requires_grad=False
             w -= lr * w.grad
             w2 -= lr * w2.grad
             wb -= lr * wb.grad
-            #b -= lr * b.grad
             # Remember to zero the gradients!
             # If not, the gradients will be accumulated
             w.grad.zero_()
             w2.grad.zero_()
             wb.grad.zero_()
-            #b.grad.zero_()
 
         print("Error: {:.4f}".format(error))
 
-
-
 def sigmoid(s):
     return 1 / (1 + torch.exp(-s))
-
 
 if __name__ == "__main__":
     print(sys.version)

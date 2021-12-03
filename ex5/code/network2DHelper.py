@@ -8,7 +8,7 @@ matplotlib.use('TkAgg')
 plt.ioff()
 
 
-class Trainer():
+class Trainer:
     '''
     Neural network trainer class
     '''

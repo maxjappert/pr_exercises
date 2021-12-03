@@ -6,6 +6,7 @@ class MyLogRegNN(torch.nn.Module):
     def __init__(self):
         super(MyLogRegNN, self).__init__()
         # TODO: Define a logistic regression classifier as a neural network
+        
 
     def forward(self, x):
         y_hat = None
